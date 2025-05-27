@@ -47,6 +47,15 @@ class _TimeGamePageState extends State<TimeGamePage> {
     SockCard('assets/images/socks/burnt_orange_sock.png', 'Burnt Orange Sock'),
     SockCard(
         'assets/images/socks/citrus_yellow_sock.png', 'Citrus Yellow Sock'),
+    // Additional sock types to support higher levels (these will fallback to emojis if images don't exist)
+    SockCard('assets/images/socks/navy_sock.png', 'Navy Sock'),
+    SockCard('assets/images/socks/maroon_sock.png', 'Maroon Sock'),
+    SockCard('assets/images/socks/teal_sock.png', 'Teal Sock'),
+    SockCard('assets/images/socks/coral_sock.png', 'Coral Sock'),
+    SockCard('assets/images/socks/indigo_sock.png', 'Indigo Sock'),
+    SockCard('assets/images/socks/lime_sock.png', 'Lime Sock'),
+    SockCard('assets/images/socks/salmon_sock.png', 'Salmon Sock'),
+    SockCard('assets/images/socks/turquoise_sock.png', 'Turquoise Sock'),
   ];
 
   // Heart system variables - REMOVED (now using HeartManager)
@@ -69,6 +78,15 @@ class _TimeGamePageState extends State<TimeGamePage> {
     SockCard('❤️', 'Heart Sock'),
     SockCard('⚡', 'Zigzag Sock'),
     SockCard('🔷', 'Argyle Sock'),
+    SockCard('🔴', 'Red Circle Sock'),
+    SockCard('🔵', 'Blue Circle Sock'),
+    SockCard('🟢', 'Green Circle Sock'),
+    SockCard('🟡', 'Yellow Circle Sock'),
+    SockCard('🟣', 'Purple Circle Sock'),
+    SockCard('🟤', 'Brown Circle Sock'),
+    SockCard('🟠', 'Orange Circle Sock'),
+    SockCard('⚫', 'Black Circle Sock'),
+    SockCard('⚪', 'White Circle Sock'),
   ];
 
   List<SockCard> cards = [];
@@ -87,7 +105,7 @@ class _TimeGamePageState extends State<TimeGamePage> {
   Timer? bonusAnimationTimer;
   bool isProcessing = false;
   bool isPreviewMode = false;
-  int previewCountdown = 5;
+  int previewCountdown = 10;
   bool showTimeBonus = false;
   bool useImages = true;
   int pairsCount = 2;
@@ -175,7 +193,9 @@ class _TimeGamePageState extends State<TimeGamePage> {
     // Cancel any existing timers
     gameTimer?.cancel();
     previewTimer?.cancel();
+  }
 
+  void startGameTimers() {
     // Start 5-second preview timer with countdown
     previewTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
@@ -196,20 +216,40 @@ class _TimeGamePageState extends State<TimeGamePage> {
   }
 
   int _calculatePairsForLevel(int level) {
-    // For time mode: double the pairs each level
-    // Level 1: 2 pairs, Level 2: 4 pairs, Level 3: 8 pairs, Level 4: 16 pairs
-    int pairs = 2;
-    for (int i = 1; i < level; i++) {
-      pairs *= 2;
+    // Custom progression for time mode with specific grid layouts
+    switch (level) {
+      case 1:
+        return 6; // 6 pairs (4 columns * 3 rows = 12 cards)
+      case 2:
+        return 8; // 8 pairs (4 columns * 4 rows = 16 cards)
+      case 3:
+        return 10; // 10 pairs (5 columns * 4 rows = 20 cards)
+      case 4:
+        return 12; // 12 pairs (6 columns * 4 rows = 24 cards)
+      case 5:
+        return 14; // 14 pairs (7 columns * 4 rows = 28 cards)
+      case 6:
+        return 15; // 15 pairs (6 columns * 5 rows = 30 cards)
+      case 7:
+        return 18; // 18 pairs (6 columns * 6 rows = 36 cards)
+      case 8:
+        return 20; // 20 pairs (8 columns * 5 rows = 40 cards)
+      case 9:
+        return 21; // 21 pairs (7 columns * 6 rows = 42 cards)
+      default:
+        // For levels beyond 9, continue with a progressive pattern
+        if (level <= 15) {
+          return 21 + (level - 9); // Gradually increase by 1 pair per level
+        } else {
+          return min(25, 25); // Cap at 25 pairs for very high levels
+        }
     }
-    // Cap at 16 pairs (32 cards) since we have limited sock types
-    return min(pairs, 16);
   }
 
   int _calculateTimeForLevel(int level) {
-    // Start with 10 seconds base time for all levels
+    // Start with 30 seconds base time for all levels
     // Players get +5 seconds for each correct match
-    return 10;
+    return 30;
   }
 
   void _startGameTimer() {
@@ -572,7 +612,7 @@ class _TimeGamePageState extends State<TimeGamePage> {
             const SizedBox(height: 10),
             _buildSummaryItem(
               icon: Icons.timer,
-              text: 'Start with 10 seconds',
+              text: 'Start with 30 seconds',
             ),
             const SizedBox(height: 10),
             _buildSummaryItem(
@@ -590,7 +630,10 @@ class _TimeGamePageState extends State<TimeGamePage> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () {
+              Navigator.of(context).pop();
+              startGameTimers();
+            },
             child: const Text('Start Challenge!'),
           ),
         ],
@@ -902,32 +945,52 @@ class _TimeGamePageState extends State<TimeGamePage> {
 
   Map<String, dynamic> _calculateOptimalGrid(
       double availableWidth, double availableHeight, int cardCount) {
-    double bestCardSize = 0;
-    int bestColumns = 2;
-    int bestRows = 2;
-    double bestSpacing = 4.0;
-    double bestEfficiency = 0;
+    // Define preferred grid layouts based on card count
+    Map<int, Map<String, int>> preferredLayouts = {
+      12: {'columns': 3, 'rows': 4}, // Level 1: 6 pairs
+      16: {'columns': 4, 'rows': 4}, // Level 2: 8 pairs
+      20: {'columns': 4, 'rows': 5}, // Level 3: 10 pairs
+      24: {'columns': 4, 'rows': 6}, // Level 4: 12 pairs
+      28: {'columns': 4, 'rows': 7}, // Level 5: 14 pairs
+      30: {'columns': 5, 'rows': 6}, // Level 6: 15 pairs
+      36: {'columns': 6, 'rows': 6}, // Level 7: 18 pairs (updated to 6x6)
+      40: {'columns': 5, 'rows': 8}, // Level 8: 20 pairs
+      42: {'columns': 6, 'rows': 7}, // Level 9: 21 pairs
+    };
 
-    // For 32 cards (16 pairs), force 4x8 grid for consistency
-    if (cardCount == 32) {
+    // Use preferred layout if available
+    if (preferredLayouts.containsKey(cardCount)) {
+      final layout = preferredLayouts[cardCount]!;
+      int columns = layout['columns']!;
+      int rows = layout['rows']!;
+
       double spacing = (availableWidth > 400)
           ? 6.0
           : (availableWidth > 300)
               ? 4.0
               : 2.0;
+
       double cardWidthBasedOnColumns =
-          (availableWidth - (spacing * 3)) / 4; // 4 columns
+          (availableWidth - (spacing * (columns - 1))) / columns;
       double cardHeightBasedOnRows =
-          (availableHeight - (spacing * 7)) / 8; // 8 rows
+          (availableHeight - (spacing * (rows - 1))) / rows;
+
       double cardSize = min(cardWidthBasedOnColumns, cardHeightBasedOnRows);
 
       return {
-        'columns': 4,
-        'rows': 8,
+        'columns': columns,
+        'rows': rows,
         'cardSize': cardSize.floorToDouble(),
         'spacing': spacing,
       };
     }
+
+    // Fallback to dynamic calculation for other card counts
+    double bestCardSize = 0;
+    int bestColumns = 2;
+    int bestRows = 2;
+    double bestSpacing = 4.0;
+    double bestEfficiency = 0;
 
     for (int columns = 2; columns <= min(cardCount, 8); columns++) {
       int rows = (cardCount / columns).ceil();
@@ -982,8 +1045,9 @@ class _TimeGamePageState extends State<TimeGamePage> {
   void _checkHasHeartsToPlay() {
     if (HeartManager().hasHeartsToPlay()) {
       // Player has hearts, start the game
+       _checkAndShowLevelSummary(widget.level);
       initGame();
-      _checkAndShowLevelSummary(widget.level);
+     // _checkAndShowLevelSummary(widget.level);
     } else {
       // No hearts available, show dialog
       Future.delayed(const Duration(milliseconds: 500), () {
@@ -1122,6 +1186,9 @@ class _TimeGamePageState extends State<TimeGamePage> {
       Future.delayed(const Duration(milliseconds: 500), () {
         _showLevelSummary();
       });
+    } else {
+      // No level summary to show, start game timers immediately
+      startGameTimers();
     }
   }
 

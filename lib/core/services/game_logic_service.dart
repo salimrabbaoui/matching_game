@@ -11,8 +11,34 @@ class GameLogicService {
 
   /// Calculate number of pairs for a given level
   int calculatePairsForLevel(int level) {
-    int additionalPairs = (level - 1) ~/ AppConstants.levelIncrementInterval;
-    return min(AppConstants.basePairs + additionalPairs, AppConstants.maxPairs);
+    // Custom progression for time mode with specific grid layouts
+    switch (level) {
+      case 1:
+        return 6; // 6 pairs (4 columns * 3 rows = 12 cards)
+      case 2:
+        return 8; // 8 pairs (4 columns * 4 rows = 16 cards)
+      case 3:
+        return 10; // 10 pairs (5 columns * 4 rows = 20 cards)
+      case 4:
+        return 12; // 12 pairs (6 columns * 4 rows = 24 cards)
+      case 5:
+        return 14; // 14 pairs (7 columns * 4 rows = 28 cards)
+      case 6:
+        return 15; // 15 pairs (6 columns * 5 rows = 30 cards)
+      case 7:
+        return 18; // 18 pairs (6 columns * 6 rows = 36 cards)
+      case 8:
+        return 20; // 20 pairs (8 columns * 5 rows = 40 cards)
+      case 9:
+        return 21; // 21 pairs (7 columns * 6 rows = 42 cards)
+      default:
+        // For levels beyond 9, continue with a progressive pattern
+        if (level <= 15) {
+          return 21 + (level - 9); // Gradually increase by 1 pair per level
+        } else {
+          return min(25, 25); // Cap at 25 pairs for very high levels
+        }
+    }
   }
 
   /// Calculate maximum moves allowed for a level
@@ -49,11 +75,10 @@ class GameLogicService {
     final pairs = calculatePairsForLevel(level);
 
     // Base time: 30 seconds per pair for level 1
-    // Decreases to 15 seconds per pair for higher levels
-    double timePerPair = 30.0 - (level - 1) * 0.3;
-    timePerPair = max(timePerPair, 15.0); // Minimum 15 seconds per pair
+    //increases by 5 seconds per every correct match
+    int timePerPair = 30;
 
-    return (pairs * timePerPair).round();
+    return ((pairs * 5) + timePerPair);
   }
 
   /// Initialize game cards for a level

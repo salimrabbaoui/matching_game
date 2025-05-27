@@ -424,22 +424,8 @@ class _MatchingGamePageState extends State<MatchingGamePage> {
   void showGameOverDialog() {
     // Only show no hearts dialog if player actually has no hearts left
     if (HeartManager().hearts <= 0) {
-      // Use centralized SubscriptionService for no hearts dialog
-      SubscriptionService().showNoHeartsDialog(
-        context,
-        onBackToMenu: () => Navigator.of(context).pop(),
-        onHeartRecharge: () {
-          HeartManager().rechargeHearts();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Hearts fully recharged!'),
-              backgroundColor: Colors.green,
-              duration: Duration(seconds: 2),
-            ),
-          );
-        },
-        showRechargeButton: true,
-      );
+      // Use the local _showNoHeartsDialog method for consistency
+      _showNoHeartsDialog();
     } else {
       // Player still has hearts, show regular game over dialog
       showDialog(
@@ -961,13 +947,13 @@ class _MatchingGamePageState extends State<MatchingGamePage> {
     String difficultyText;
     Color badgeColor;
 
-    if (widget.level <= 6) {
+    if (widget.level <= 3) {
       difficultyText = 'Easy';
       badgeColor = successColor;
-    } else if (widget.level <= 12) {
+    } else if (widget.level <= 6) {
       difficultyText = 'Medium';
       badgeColor = secondaryColor;
-    } else if (widget.level <= 20) {
+    } else if (widget.level <= 9) {
       difficultyText = 'Hard';
       badgeColor = accentColor;
     } else {
@@ -995,23 +981,162 @@ class _MatchingGamePageState extends State<MatchingGamePage> {
   void _checkHasHeartsToPlay() {
     if (!HeartManager().hasHeartsToPlay()) {
       Future.delayed(const Duration(milliseconds: 500), () {
-        SubscriptionService().showNoHeartsDialog(
-          context,
-          onBackToMenu: () => Navigator.of(context).pop(),
-          onHeartRecharge: () {
-            HeartManager().rechargeHearts();
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Hearts fully recharged!'),
-                backgroundColor: Colors.green,
-                duration: Duration(seconds: 2),
-              ),
-            );
-          },
-          showRechargeButton: true,
-        );
+        _showNoHeartsDialog();
       });
     }
+  }
+
+  void _showNoHeartsDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Colors.purple.shade50, Colors.purple.shade100],
+            ),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.hourglass_empty, color: Colors.purple, size: 60),
+              const SizedBox(height: 16),
+              const Text(
+                'No Hearts Left',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.purple,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              Column(
+                children: [
+                  Text(
+                    'You need to wait for hearts to regenerate.',
+                    style: const TextStyle(fontSize: 16, color: Colors.black87),
+                    textAlign: TextAlign.center,
+                  ),
+                  if (HeartManager().lastHeartLossTime != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text(
+                        'Next heart in: ${HeartManager().getNextHeartTime()}',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.purple,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              // Premium subscription button
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  SubscriptionService().showSubscriptionDialog(
+                    context,
+                    onCancel: _showNoHeartsDialog,
+                    onSuccess: (type) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                              'You now have unlimited hearts with $type plan!'),
+                          backgroundColor: Colors.green,
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    },
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.amber,
+                  foregroundColor: Colors.black87,
+                  minimumSize: Size(double.infinity, 44),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Icon(Icons.star, color: Colors.orangeAccent),
+                    SizedBox(width: 8),
+                    Text(
+                      'Get Unlimited Hearts',
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              // TEST: Recharge Hearts button
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  HeartManager().rechargeHearts();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Hearts fully recharged!'),
+                      backgroundColor: Colors.green,
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                  minimumSize: Size(double.infinity, 44),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Icon(Icons.bolt, color: Colors.yellow),
+                    SizedBox(width: 8),
+                    Text(
+                      'Recharge Hearts (Test)',
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              // Back to menu button
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop(); // Return to menu
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryColor,
+                  foregroundColor: Colors.white,
+                  minimumSize: Size(double.infinity, 44),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                child:
+                    const Text('Back to Menu', style: TextStyle(fontSize: 16)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _checkAndShowLevelSummary(int level) async {

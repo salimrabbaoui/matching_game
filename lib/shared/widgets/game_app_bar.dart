@@ -60,6 +60,14 @@ class _GameAppBarState extends State<GameAppBar> {
     return AppBar(
       backgroundColor: widget.backgroundColor,
       foregroundColor: widget.foregroundColor,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back),
+        onPressed: () {
+          // Lose a heart when the user clicks the back arrow
+          HeartManager().loseHeart();
+          Navigator.of(context).pop();
+        },
+      ),
       title: LayoutBuilder(
         builder: (context, constraints) {
           // Calculate text sizes based on screen width
