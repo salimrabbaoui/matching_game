@@ -207,23 +207,23 @@ class _MatchingGamePageState extends State<MatchingGamePage> {
     // Generally allowing 2.5x to 3x the pairs for a reasonable challenge
     switch (level) {
       case 1:
-        return 15; // 6 pairs × 2.5
+        return 19; // 6 pairs × 2.66
       case 2:
-        return 18; // 8 pairs × 2.25
+        return 23; // 8 pairs × 2.5
       case 3:
-        return 20; // 10 pairs × 2
+        return 25; // 10 pairs × 2.4
       case 4:
-        return 24; // 12 pairs × 2
+        return 28; // 12 pairs × 2.33
       case 5:
-        return 28; // 14 pairs × 2
+        return 32; // 14 pairs × 2.28
       case 6:
-        return 30; // 15 pairs × 2
+        return 36; // 15 pairs × 2.4
       case 7:
-        return 36; // 18 pairs × 2
+        return 40; // 18 pairs × 2.22
       case 8:
-        return 40; // 20 pairs × 2
+        return 44; // 20 pairs × 2.2
       case 9:
-        return 42; // 21 pairs × 2
+        return 48; // 21 pairs × 2.28
       default:
         // For levels beyond 9, use a formula
         if (level > 9) {
@@ -299,8 +299,12 @@ class _MatchingGamePageState extends State<MatchingGamePage> {
       });
     }
 
-    // Check if player has exceeded max moves
-    if (moves >= maxMoves && matchedPairs.length < cards.length) {
+    // Check if player has exceeded max moves OR insufficient moves remaining
+    final remainingPairs = (cards.length - matchedPairs.length) / 2;
+    final remainingMoves = maxMoves - moves;
+
+    if ((moves >= maxMoves || remainingMoves < remainingPairs) &&
+        matchedPairs.length < cards.length) {
       Timer(const Duration(milliseconds: 500), () {
         HeartManager().loseHeart();
         showGameOverDialog();
@@ -442,6 +446,19 @@ class _MatchingGamePageState extends State<MatchingGamePage> {
     );
   }
 
+  String _getGameOverMessage() {
+    final remainingPairs = (cards.length - matchedPairs.length) / 2;
+    final remainingMoves = maxMoves - moves;
+
+    if (moves >= maxMoves) {
+      return 'You used all your moves!\nMoves: $moves\nHearts remaining: ${HeartManager().hearts}';
+    } else if (remainingMoves < remainingPairs) {
+      return 'Not enough moves to finish!\nRemaining pairs: ${remainingPairs.toInt()}\nRemaining moves: $remainingMoves\nHearts remaining: ${HeartManager().hearts}';
+    } else {
+      return 'Game over!\nMoves: $moves\nHearts remaining: ${HeartManager().hearts}';
+    }
+  }
+
   void showGameOverDialog() {
     // Only show no hearts dialog if player actually has no hearts left
     if (HeartManager().hearts <= 0) {
@@ -481,7 +498,7 @@ class _MatchingGamePageState extends State<MatchingGamePage> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'You used all your moves!\nMoves: $moves\nHearts remaining: ${HeartManager().hearts}',
+                  _getGameOverMessage(),
                   style: const TextStyle(fontSize: 16, color: Colors.black87),
                   textAlign: TextAlign.center,
                 ),
