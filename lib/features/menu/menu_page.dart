@@ -212,7 +212,7 @@ class _MenuPageState extends State<MenuPage> {
                     const SizedBox(height: 15),
 
                     // Select Level Button (only if they've reached higher levels)
-                    if (highestLevel > 1 && !isLoading)
+                    //if (highestLevel > 1 && !isLoading)
                       _buildButton(
                         context,
                         text: 'Moves Challenge',
@@ -243,16 +243,16 @@ class _MenuPageState extends State<MenuPage> {
                       onPressed: () => _showHowToPlayDialog(context),
                     ),
 
-                    const SizedBox(height: 15),
+                   // const SizedBox(height: 15),
 
                     // About Button
-                    _buildButton(
+                  /*  _buildButton(
                       context,
                       text: 'About',
                       icon: Icons.info_outline,
                       color: Colors.indigo,
                       onPressed: () => _showAboutDialog(context),
-                    ),
+                    ),*/
 
                     const SizedBox(height: 30),
 

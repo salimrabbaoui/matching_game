@@ -170,49 +170,69 @@ class _MatchingGamePageState extends State<MatchingGamePage> {
   }
 
   int _calculatePairsForLevel(int level) {
-    // Start with 2 pairs at level 1
-    // Increase by 1 pair every 3 levels
-    // Reaches 16 pairs by level 43
-    int basePairs = 2;
-    int additionalPairs = (level - 1) ~/ 3;
-    return min(basePairs + additionalPairs, 16);
+    // Define specific pairs for each level
+    switch (level) {
+      case 1:
+        return 6;
+      case 2:
+        return 8;
+      case 3:
+        return 10;
+      case 4:
+        return 12;
+      case 5:
+        return 14;
+      case 6:
+        return 15;
+      case 7:
+        return 18;
+      case 8:
+        return 20;
+      case 9:
+        return 21;
+      default:
+        // For levels beyond 9, continue with a pattern
+        if (level > 9) {
+          return 21 +
+              ((level - 9) * 2); // Increase by 2 pairs per level after 9
+        }
+        return 6; // Fallback to level 1
+    }
   }
 
   int _calculateMaxMovesForLevel(int level) {
     final pairs = _calculatePairsForLevel(level);
 
-    // Base moves calculation starts with pairs * 3 (very generous)
-    // Gradually reduce to pairs * 2 (perfect play)
-
-    // Calculate how far we are through the 50 levels (0.0 to 1.0)
-    double progressFactor = min((level - 1) / 49, 1.0);
-
-    // Start with multiplier of 3.0, end with 2.0
-    double multiplier = 3.0 - progressFactor;
-
-    // Calculate base moves
-    int baseMoves = (pairs * multiplier).floor();
-
-    // Apply level-specific adjustment to ensure unique difficulty
-    // Use modulo 3 to create a consistent pattern
-    int levelMod = level % 3;
-
-    // When pairs change (every 3rd level), keep standard calculation
-    // For other levels, apply a specific adjustment
-    int movesAdjustment = 0;
-    if (levelMod == 1) {
-      // First level of a new pair count - standard calculation
-      movesAdjustment = 0;
-    } else if (levelMod == 2) {
-      // Second level with same pairs - reduce by 1
-      movesAdjustment = -1;
-    } else if (levelMod == 0) {
-      // Third level with same pairs - reduce by 2
-      movesAdjustment = -2;
+    // Define specific max moves for each level to provide balanced difficulty
+    // Generally allowing 2.5x to 3x the pairs for a reasonable challenge
+    switch (level) {
+      case 1:
+        return 15; // 6 pairs × 2.5
+      case 2:
+        return 18; // 8 pairs × 2.25
+      case 3:
+        return 20; // 10 pairs × 2
+      case 4:
+        return 24; // 12 pairs × 2
+      case 5:
+        return 28; // 14 pairs × 2
+      case 6:
+        return 30; // 15 pairs × 2
+      case 7:
+        return 36; // 18 pairs × 2
+      case 8:
+        return 40; // 20 pairs × 2
+      case 9:
+        return 42; // 21 pairs × 2
+      default:
+        // For levels beyond 9, use a formula
+        if (level > 9) {
+          // Gradually reduce the multiplier as levels increase
+          double multiplier = max(2.3, 3.0 - ((level - 9) * 0.1));
+          return (pairs * multiplier).floor();
+        }
+        return pairs * 3; // Fallback
     }
-
-    // Ensure we don't go below the minimum perfect play amount
-    return max(baseMoves + movesAdjustment, pairs * 2);
   }
 
   void resetGame() {
@@ -557,14 +577,33 @@ class _MatchingGamePageState extends State<MatchingGamePage> {
   }
 
   int getCrossAxisCount() {
-    final pairs = _calculatePairsForLevel(widget.level);
-    final totalCards = pairs * 2;
-
-    // Ensure we always have an even number for the cross axis
-    if (pairs <= 4) return 2; // For 8 cards or less (2×4 grid)
-    if (pairs <= 8) return 4; // For 16 cards or less (4×4 grid)
-    if (pairs <= 12) return 4; // For 24 cards or less (4×6 grid)
-    return 6; // For more cards (6×6 or similar grid)
+    // Define specific column counts for each level based on your requirements
+    switch (widget.level) {
+      case 1:
+        return 3; // 6 pairs (3 columns × 4 rows)
+      case 2:
+        return 4; // 8 pairs (4 columns × 4 rows)
+      case 3:
+        return 4; // 10 pairs (4 columns × 5 rows)
+      case 4:
+        return 4; // 12 pairs (4 columns × 6 rows)
+      case 5:
+        return 4; // 14 pairs (4 columns × 7 rows)
+      case 6:
+        return 5; // 15 pairs (5 columns × 6 rows)
+      case 7:
+        return 6; // 18 pairs (6 columns × 6 rows)
+      case 8:
+        return 5; // 20 pairs (5 columns × 8 rows)
+      case 9:
+        return 6; // 21 pairs (6 columns × 7 rows)
+      default:
+        // For levels beyond 9, use a reasonable grid
+        final pairs = _calculatePairsForLevel(widget.level);
+        if (pairs <= 24) return 6;
+        if (pairs <= 36) return 6;
+        return 8; // For very high levels
+    }
   }
 
   void _showLevelSummary() {
@@ -879,68 +918,45 @@ class _MatchingGamePageState extends State<MatchingGamePage> {
       };
     }
 
-    double bestCardSize = 0;
-    int bestColumns = 2;
-    int bestRows = 2;
-    double bestSpacing = 4.0;
-    double bestEfficiency = 0;
+    // Use the predefined column count for this level
+    int columns = getCrossAxisCount();
+    int rows = (cardCount / columns).ceil();
 
-    // Try different configurations
-    for (int columns = 2; columns <= min(cardCount, 8); columns++) {
-      int rows = (cardCount / columns).ceil();
+    // Calculate spacing (2-6px based on available space)
+    double spacing = (availableWidth > 400)
+        ? 6.0
+        : (availableWidth > 300)
+            ? 4.0
+            : 2.0;
 
-      // Skip if this creates too many empty spaces
-      if ((columns * rows) - cardCount > columns) continue;
+    // Calculate card size that would fit with this configuration
+    double cardWidthBasedOnColumns =
+        (availableWidth - (spacing * (columns - 1))) / columns;
+    double cardHeightBasedOnRows =
+        (availableHeight - (spacing * (rows - 1))) / rows;
 
-      // Calculate spacing (2-6px based on available space)
-      double spacing = (availableWidth > 400)
-          ? 6.0
-          : (availableWidth > 300)
-              ? 4.0
-              : 2.0;
+    // Use the smaller dimension to ensure square cards fit in both dimensions
+    double cardSize = min(cardWidthBasedOnColumns, cardHeightBasedOnRows);
 
-      // Calculate card size that would fit with this configuration
-      double cardWidthBasedOnColumns =
+    // Make sure card size is reasonable (not too small)
+    if (cardSize < 30) {
+      // If cards would be too small, reduce spacing
+      spacing = 2.0;
+      cardWidthBasedOnColumns =
           (availableWidth - (spacing * (columns - 1))) / columns;
-      double cardHeightBasedOnRows =
-          (availableHeight - (spacing * (rows - 1))) / rows;
-
-      // Use the smaller dimension to ensure square cards fit in both dimensions
-      double cardSize = min(cardWidthBasedOnColumns, cardHeightBasedOnRows);
-
-      // Make sure card size is reasonable (not too small)
-      if (cardSize < 40) continue;
-
-      // Calculate efficiency (how much of the screen is used by cards)
-      double totalCardArea = cardCount * (cardSize * cardSize);
-      double totalScreenArea = availableWidth * availableHeight;
-      double efficiency = totalCardArea / totalScreenArea;
-
-      // Prefer configurations with better efficiency and reasonable card sizes
-      if (efficiency > bestEfficiency && cardSize >= bestCardSize * 0.9) {
-        bestCardSize = cardSize;
-        bestColumns = columns;
-        bestRows = rows;
-        bestSpacing = spacing;
-        bestEfficiency = efficiency;
-      }
+      cardHeightBasedOnRows = (availableHeight - (spacing * (rows - 1))) / rows;
+      cardSize = min(cardWidthBasedOnColumns, cardHeightBasedOnRows);
     }
 
-    // Ensure we have a valid configuration
-    if (bestCardSize == 0) {
-      bestColumns = 2;
-      bestRows = (cardCount / 2).ceil();
-      bestSpacing = 4.0;
-      bestCardSize = min((availableWidth - bestSpacing) / 2,
-          (availableHeight - (bestSpacing * (bestRows - 1))) / bestRows);
-    }
+    // Ensure minimum card size
+    cardSize = max(cardSize, 30.0);
 
     return {
-      'columns': bestColumns,
-      'rows': bestRows,
-      'cardSize': bestCardSize
-          .floorToDouble(), // Use floor to ensure integer pixel values
-      'spacing': bestSpacing,
+      'columns': columns,
+      'rows': rows,
+      'cardSize':
+          cardSize.floorToDouble(), // Use floor to ensure integer pixel values
+      'spacing': spacing,
     };
   }
 

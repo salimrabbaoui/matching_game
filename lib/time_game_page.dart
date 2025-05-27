@@ -975,7 +975,7 @@ class _TimeGamePageState extends State<TimeGamePage> {
       24: {'columns': 4, 'rows': 6}, // Level 4: 12 pairs
       28: {'columns': 4, 'rows': 7}, // Level 5: 14 pairs
       30: {'columns': 5, 'rows': 6}, // Level 6: 15 pairs
-      36: {'columns': 6, 'rows': 6}, // Level 7: 18 pairs (updated to 6x6)
+      36: {'columns': 6, 'rows': 6}, // Level 7: 18 pairs 
       40: {'columns': 5, 'rows': 8}, // Level 8: 20 pairs
       42: {'columns': 6, 'rows': 7}, // Level 9: 21 pairs
     };
