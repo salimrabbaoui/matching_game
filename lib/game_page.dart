@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'subscription_service.dart';
 import 'heart_manager.dart';
 import 'shared/widgets/game_app_bar.dart';
+import 'features/menu/menu_page.dart';
 
 class MatchingGamePage extends StatefulWidget {
   final int level;
@@ -987,155 +988,47 @@ class _MatchingGamePageState extends State<MatchingGamePage> {
   }
 
   void _showNoHeartsDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Colors.purple.shade50, Colors.purple.shade100],
-            ),
-            borderRadius: BorderRadius.circular(20),
+    SubscriptionService().showNoHeartsDialog(
+      context,
+      onBackToMenu: () {
+        // Navigate back to menu
+        if (mounted && context.mounted) {
+          try {
+            print('Navigating back to menu from game page');
+            Navigator.of(context).pop(); // Return to menu
+          } catch (e) {
+            print('Navigation error: $e');
+          }
+        }
+      },
+      onHeartRecharge: () {
+        // Test heart recharge functionality
+        HeartManager().rechargeHearts();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Hearts fully recharged!'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.hourglass_empty, color: Colors.purple, size: 60),
-              const SizedBox(height: 16),
-              const Text(
-                'No Hearts Left',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.purple,
-                ),
-                textAlign: TextAlign.center,
+        );
+      },
+      onShowSubscription: () {
+        // This will be called after returning to menu to show subscription dialog
+        // Navigate to menu with subscription dialog flag
+        if (mounted && context.mounted) {
+          try {
+            print('Navigating to menu with subscription dialog');
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => MenuPage(showSubscriptionDialog: true),
               ),
-              const SizedBox(height: 16),
-              Column(
-                children: [
-                  Text(
-                    'You need to wait for hearts to regenerate.',
-                    style: const TextStyle(fontSize: 16, color: Colors.black87),
-                    textAlign: TextAlign.center,
-                  ),
-                  if (HeartManager().lastHeartLossTime != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: Text(
-                        'Next heart in: ${HeartManager().getNextHeartTime()}',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.purple,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              // Premium subscription button
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  SubscriptionService().showSubscriptionDialog(
-                    context,
-                    onCancel: _showNoHeartsDialog,
-                    onSuccess: (type) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                              'You now have unlimited hearts with $type plan!'),
-                          backgroundColor: Colors.green,
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
-                    },
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.amber,
-                  foregroundColor: Colors.black87,
-                  minimumSize: Size(double.infinity, 44),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(Icons.star, color: Colors.orangeAccent),
-                    SizedBox(width: 8),
-                    Text(
-                      'Get Unlimited Hearts',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              // TEST: Recharge Hearts button
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  HeartManager().rechargeHearts();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Hearts fully recharged!'),
-                      backgroundColor: Colors.green,
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                  minimumSize: Size(double.infinity, 44),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(Icons.bolt, color: Colors.yellow),
-                    SizedBox(width: 8),
-                    Text(
-                      'Recharge Hearts (Test)',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              // Back to menu button
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  Navigator.of(context).pop(); // Return to menu
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryColor,
-                  foregroundColor: Colors.white,
-                  minimumSize: Size(double.infinity, 44),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-                child:
-                    const Text('Back to Menu', style: TextStyle(fontSize: 16)),
-              ),
-            ],
-          ),
-        ),
-      ),
+            );
+          } catch (e) {
+            print('Navigation error: $e');
+          }
+        }
+      },
+      showRechargeButton: true, // Show the test recharge button
     );
   }
 

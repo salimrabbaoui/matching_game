@@ -133,15 +133,16 @@ class _NoHeartsDialogState extends State<NoHeartsDialog> {
                     });
                   },
                   onSuccess: (type) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          'You now have unlimited hearts with $type plan!',
-                        ),
-                        backgroundColor: AppConstants.successColor,
-                        duration: const Duration(seconds: 2),
-                      ),
-                    );
+                    print('Success callback triggered for $type');
+                    // Snackbar is now handled by subscription service
+                  },
+                  onBackToMenu: () {
+                    try {
+                      print('Navigating back to menu from no hearts dialog');
+                      widget.onBackToMenu();
+                    } catch (e) {
+                      print('Navigation error: $e');
+                    }
                   },
                 );
               },

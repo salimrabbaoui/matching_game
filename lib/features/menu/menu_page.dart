@@ -4,9 +4,13 @@ import '../../core/services/storage_service.dart';
 import '../../shared/widgets/dialogs/level_selection_dialog.dart';
 import '../../game_page.dart';
 import '../../time_game_page.dart';
+import '../../subscription_dialog.dart';
+import '../../subscription_service.dart';
 
 class MenuPage extends StatefulWidget {
-  const MenuPage({super.key});
+  final bool showSubscriptionDialog;
+
+  const MenuPage({super.key, this.showSubscriptionDialog = false});
 
   @override
   State<MenuPage> createState() => _MenuPageState();
@@ -25,7 +29,18 @@ class _MenuPageState extends State<MenuPage> {
 
   Future<void> _initializeServices() async {
     await StorageService().initialize();
+    await SubscriptionService().initialize();
     await _loadLevels();
+
+    // Show subscription dialog if requested
+    if (widget.showSubscriptionDialog) {
+      // Small delay to ensure the menu is fully loaded
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          _showSubscriptionDialog();
+        }
+      });
+    }
   }
 
   Future<void> _loadLevels() async {
@@ -88,6 +103,33 @@ class _MenuPageState extends State<MenuPage> {
         transitionDuration: const Duration(milliseconds: 500),
       ),
     ).then((_) => _loadLevels());
+  }
+
+  void _showSubscriptionDialog() {
+    SubscriptionService().showSubscriptionDialog(
+      context,
+      onSuccess: (subscriptionType) {
+        // Additional success handling specific to menu
+        print('Subscription purchased from menu: $subscriptionType');
+
+        // Optionally reload levels or update UI state
+        _loadLevels();
+      },
+      onError: (error) {
+        // Handle subscription error
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Purchase failed: $error'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      },
+      onCancel: () {
+        // Handle user cancellation
+        print('User cancelled subscription');
+      },
+    );
   }
 
   @override
@@ -178,6 +220,17 @@ class _MenuPageState extends State<MenuPage> {
                         color: Colors.blue,
                         onPressed: _showClassicLevelSelection,
                       ),
+
+                    const SizedBox(height: 15),
+
+                    // Unlimited Hearts Button
+                    _buildButton(
+                      context,
+                      text: 'Unlimited Hearts',
+                      icon: Icons.favorite,
+                      color: Colors.red,
+                      onPressed: _showSubscriptionDialog,
+                    ),
 
                     const SizedBox(height: 30),
 

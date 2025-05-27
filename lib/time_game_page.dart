@@ -7,6 +7,7 @@ import 'subscription_dialog.dart';
 import 'subscription_service.dart';
 import 'heart_manager.dart';
 import 'shared/widgets/game_app_bar.dart';
+import 'features/menu/menu_page.dart';
 
 class TimeGamePage extends StatefulWidget {
   final int level;
@@ -110,6 +111,7 @@ class _TimeGamePageState extends State<TimeGamePage> {
   bool useImages = true;
   int pairsCount = 2;
   int highestLevel = 1;
+  bool isShowingLevelSummary = false;
 
   // Color scheme
   final Color primaryColor = Color(0xFF5D9CEC);
@@ -188,7 +190,7 @@ class _TimeGamePageState extends State<TimeGamePage> {
 
     // Start preview mode
     isPreviewMode = true;
-    previewCountdown = 5;
+    previewCountdown = 10;
 
     // Cancel any existing timers
     gameTimer?.cancel();
@@ -596,6 +598,10 @@ class _TimeGamePageState extends State<TimeGamePage> {
   }
 
   void _showLevelSummary() {
+    setState(() {
+      isShowingLevelSummary = true;
+    });
+
     showDialog(
       context: context,
       barrierDismissible: true,
@@ -632,13 +638,27 @@ class _TimeGamePageState extends State<TimeGamePage> {
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
+              setState(() {
+                isShowingLevelSummary = false;
+              });
+              initGame();
               startGameTimers();
             },
             child: const Text('Start Challenge!'),
           ),
         ],
       ),
-    );
+    ).then((_) {
+      // This handles when dialog is dismissed by tapping outside or back button
+      setState(() {
+        isShowingLevelSummary = false;
+      });
+      // Initialize game if dialog was dismissed without clicking the button
+      if (cards.isEmpty) {
+        initGame();
+        startGameTimers();
+      }
+    });
   }
 
   Widget _buildSummaryItem({
@@ -675,23 +695,25 @@ class _TimeGamePageState extends State<TimeGamePage> {
             colors: [primaryColor.withOpacity(0.1), backgroundColor],
           ),
         ),
-        child: cards.isEmpty
-            ? Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
-                ),
-              )
-            : SafeArea(
-                child: OrientationBuilder(
-                  builder: (context, orientation) {
-                    if (orientation == Orientation.portrait) {
-                      return _buildPortraitLayout();
-                    } else {
-                      return _buildLandscapeLayout();
-                    }
-                  },
-                ),
-              ),
+        child: isShowingLevelSummary
+            ? Container() // Hide content when level summary dialog is shown
+            : cards.isEmpty
+                ? Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+                    ),
+                  )
+                : SafeArea(
+                    child: OrientationBuilder(
+                      builder: (context, orientation) {
+                        if (orientation == Orientation.portrait) {
+                          return _buildPortraitLayout();
+                        } else {
+                          return _buildLandscapeLayout();
+                        }
+                      },
+                    ),
+                  ),
       ),
     );
   }
@@ -1044,10 +1066,8 @@ class _TimeGamePageState extends State<TimeGamePage> {
   // Check if player has hearts to play, start game or show dialog
   void _checkHasHeartsToPlay() {
     if (HeartManager().hasHeartsToPlay()) {
-      // Player has hearts, start the game
-       _checkAndShowLevelSummary(widget.level);
-      initGame();
-     // _checkAndShowLevelSummary(widget.level);
+      // Player has hearts, check for level summary first
+      _checkAndShowLevelSummary(widget.level);
     } else {
       // No hearts available, show dialog
       Future.delayed(const Duration(milliseconds: 500), () {
@@ -1059,119 +1079,35 @@ class _TimeGamePageState extends State<TimeGamePage> {
   }
 
   void _showNoHeartsDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Colors.purple.shade50, Colors.purple.shade100],
-            ),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.hourglass_empty, color: Colors.purple, size: 60),
-              const SizedBox(height: 16),
-              const Text(
-                'No Hearts Left',
-                style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.purple),
-                textAlign: TextAlign.center,
+    SubscriptionService().showNoHeartsDialog(
+      context,
+      onBackToMenu: () {
+        // Navigate back to menu
+        if (mounted && context.mounted) {
+          try {
+            print('Navigating back to menu from time game');
+            Navigator.of(context).pop(); // Return to menu
+          } catch (e) {
+            print('Navigation error: $e');
+          }
+        }
+      },
+      onShowSubscription: () {
+        // This will be called after returning to menu to show subscription dialog
+        // Navigate to menu with subscription dialog flag
+        if (mounted && context.mounted) {
+          try {
+            print('Navigating to menu with subscription dialog from time game');
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => MenuPage(showSubscriptionDialog: true),
               ),
-              const SizedBox(height: 16),
-              Column(
-                children: [
-                  Text(
-                    'You need to wait for hearts to regenerate.',
-                    style: const TextStyle(fontSize: 16, color: Colors.black87),
-                    textAlign: TextAlign.center,
-                  ),
-                  if (HeartManager().lastHeartLossTime != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: Text(
-                        'Next heart in: ${HeartManager().getNextHeartTime()}',
-                        style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.purple),
-                      ),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              // Premium subscription button
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  SubscriptionService().showSubscriptionDialog(
-                    context,
-                    onCancel: _showNoHeartsDialog,
-                    onSuccess: (type) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                              'You now have unlimited hearts with $type plan!'),
-                          backgroundColor: Colors.green,
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
-                      // Start the game after successful purchase
-                      initGame();
-                      _checkAndShowLevelSummary(widget.level);
-                    },
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.amber,
-                  foregroundColor: Colors.black87,
-                  minimumSize: Size(double.infinity, 44),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(Icons.star, color: Colors.orangeAccent),
-                    SizedBox(width: 8),
-                    Text(
-                      'Get Unlimited Hearts',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  Navigator.of(context).pop();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryColor,
-                  foregroundColor: Colors.white,
-                  minimumSize: Size(double.infinity, 44),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20)),
-                ),
-                child:
-                    const Text('Back to Menu', style: TextStyle(fontSize: 16)),
-              ),
-            ],
-          ),
-        ),
-      ),
+            );
+          } catch (e) {
+            print('Navigation error: $e');
+          }
+        }
+      },
     );
   }
 
@@ -1187,7 +1123,8 @@ class _TimeGamePageState extends State<TimeGamePage> {
         _showLevelSummary();
       });
     } else {
-      // No level summary to show, start game timers immediately
+      // No level summary to show, initialize game and start timers immediately
+      initGame();
       startGameTimers();
     }
   }

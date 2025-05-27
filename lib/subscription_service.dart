@@ -64,6 +64,7 @@ class SubscriptionService {
     VoidCallback? onCancel,
     Function(String)? onSuccess,
     Function(String)? onError,
+    VoidCallback? onBackToMenu,
   }) {
     SubscriptionDialog.show(
       context,
@@ -72,7 +73,33 @@ class SubscriptionService {
       onPurchase: (subscriptionType) => _processPurchase(
         context,
         subscriptionType,
-        onSuccess: onSuccess,
+        onSuccess: (type) {
+          // Use the dialog context to show snackbar immediately before it closes
+          try {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('You now have unlimited hearts with $type plan!'),
+                backgroundColor: Colors.green,
+                duration: const Duration(seconds: 2),
+              ),
+            );
+            print('Snackbar shown successfully from subscription service');
+          } catch (e) {
+            print('Error showing snackbar from subscription service: $e');
+          }
+
+          // Call original success callback if provided
+          if (onSuccess != null) {
+            onSuccess(type);
+          }
+
+          // Handle navigation after snackbar
+          if (onBackToMenu != null) {
+            Future.delayed(const Duration(milliseconds: 2500), () {
+              onBackToMenu();
+            });
+          }
+        },
         onError: onError,
       ),
       onCancel: onCancel,
@@ -84,6 +111,7 @@ class SubscriptionService {
     BuildContext context, {
     required VoidCallback onBackToMenu,
     VoidCallback? onHeartRecharge,
+    VoidCallback? onShowSubscription,
     bool showRechargeButton = false,
   }) {
     showDialog(
@@ -142,33 +170,49 @@ class SubscriptionService {
               ElevatedButton(
                 onPressed: () {
                   Navigator.of(context).pop();
-                  showSubscriptionDialog(
-                    context,
-                    onCancel: () {
-                      // Use a small delay to ensure the subscription dialog is fully closed
-                      // before showing the no hearts dialog with a fresh context
-                      Future.delayed(const Duration(milliseconds: 100), () {
-                        if (context.mounted) {
-                          showNoHeartsDialog(
-                            context,
-                            onBackToMenu: onBackToMenu,
-                            onHeartRecharge: onHeartRecharge,
-                            showRechargeButton: showRechargeButton,
+                  // If onShowSubscription callback is provided, use it (redirect to menu first)
+                  // Otherwise, show subscription dialog directly (fallback)
+                  if (onShowSubscription != null) {
+                    onBackToMenu();
+                    // Small delay to ensure menu is loaded before showing subscription
+                    Future.delayed(const Duration(milliseconds: 300), () {
+                      onShowSubscription();
+                    });
+                  } else {
+                    // Fallback: show subscription dialog directly
+                    showSubscriptionDialog(
+                      context,
+                      onCancel: () {
+                        Future.delayed(const Duration(milliseconds: 100), () {
+                          if (context.mounted) {
+                            showNoHeartsDialog(
+                              context,
+                              onBackToMenu: onBackToMenu,
+                              onHeartRecharge: onHeartRecharge,
+                              onShowSubscription: onShowSubscription,
+                              showRechargeButton: showRechargeButton,
+                            );
+                          }
+                        });
+                      },
+                      onSuccess: (type) {
+                        try {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'You now have unlimited hearts with $type plan!',
+                              ),
+                              backgroundColor: Colors.green,
+                              duration: const Duration(seconds: 2),
+                            ),
                           );
+                        } catch (e) {
+                          print('Error showing snackbar: $e');
                         }
-                      });
-                    },
-                    onSuccess: (type) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                              'You now have unlimited hearts with $type plan!'),
-                          backgroundColor: Colors.green,
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
-                    },
-                  );
+                      },
+                      onBackToMenu: onBackToMenu,
+                    );
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.amber,
@@ -393,7 +437,7 @@ class SubscriptionService {
     }
 
     print(
-        'Demo mode: Granted unlimited hearts for $subscriptionType subscription');
+        '🎮 Demo mode: Granted unlimited hearts for $subscriptionType subscription');
   }
 
   // Show purchase error dialog
