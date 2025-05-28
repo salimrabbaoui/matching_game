@@ -62,6 +62,14 @@ class AppConstants {
     'assets/images/socks/burgundi_sock.png',
     'assets/images/socks/burnt_orange_sock.png',
     'assets/images/socks/citrus_yellow_sock.png',
+    'assets/images/socks/navy_sock.png',
+    'assets/images/socks/maroon_sock.png',
+    'assets/images/socks/teal_sock.png',
+    'assets/images/socks/coral_sock.png',
+    'assets/images/socks/indigo_sock.png',
+    'assets/images/socks/lime_sock.png',
+    'assets/images/socks/salmon_sock.png',
+    'assets/images/socks/turquoise_sock.png',
   ];
 
   static const List<String> fallbackEmojis = [

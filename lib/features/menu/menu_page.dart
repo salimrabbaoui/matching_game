@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../core/constants/app_constants.dart';
 import '../../core/services/storage_service.dart';
 import '../../shared/widgets/dialogs/level_selection_dialog.dart';
 import '../../game_page.dart';
 import '../../time_game_page.dart';
-import '../../subscription_dialog.dart';
 import '../../subscription_service.dart';
 
 class MenuPage extends StatefulWidget {
@@ -213,13 +211,13 @@ class _MenuPageState extends State<MenuPage> {
 
                     // Select Level Button (only if they've reached higher levels)
                     //if (highestLevel > 1 && !isLoading)
-                      _buildButton(
-                        context,
-                        text: 'Moves Challenge',
-                        icon: Icons.list,
-                        color: Colors.blue,
-                        onPressed: _showClassicLevelSelection,
-                      ),
+                    _buildButton(
+                      context,
+                      text: 'Moves Challenge',
+                      icon: Icons.list,
+                      color: Colors.blue,
+                      onPressed: _showClassicLevelSelection,
+                    ),
 
                     const SizedBox(height: 15),
 
@@ -243,10 +241,10 @@ class _MenuPageState extends State<MenuPage> {
                       onPressed: () => _showHowToPlayDialog(context),
                     ),
 
-                   // const SizedBox(height: 15),
+                    // const SizedBox(height: 15),
 
                     // About Button
-                  /*  _buildButton(
+                    /*  _buildButton(
                       context,
                       text: 'About',
                       icon: Icons.info_outline,

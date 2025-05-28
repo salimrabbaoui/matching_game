@@ -8,6 +8,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'subscription_service.dart';
 import 'heart_manager.dart';
 import 'core/services/ad_service.dart';
+import 'core/services/game_logic_service.dart';
+import 'core/services/color_group_service.dart';
+import 'core/models/sock_card.dart';
 import 'shared/widgets/game_app_bar.dart';
 import 'shared/widgets/ad_banner_widget.dart';
 import 'features/menu/menu_page.dart';
@@ -21,63 +24,74 @@ class MatchingGamePage extends StatefulWidget {
   State<MatchingGamePage> createState() => _MatchingGamePageState();
 }
 
-class SockCard {
-  final String imagePath;
-  final String name;
-
-  const SockCard(this.imagePath, this.name);
-}
-
 class _MatchingGamePageState extends State<MatchingGamePage> {
-  // Different sock images
+  // Different sock images - using centralized model now
   final List<SockCard> cardSymbols = const [
-    SockCard('assets/images/socks/red_sock.png', 'Red Sock'),
-    SockCard('assets/images/socks/blue_sock.png', 'Blue Sock'),
-    SockCard('assets/images/socks/black_sock.png', 'Black Sock'),
-    SockCard('assets/images/socks/pink_sock.png', 'Pink Sock'),
-    SockCard('assets/images/socks/white_sock.png', 'White Sock'),
-    SockCard('assets/images/socks/grey_sock.png', 'Grey Sock'),
-    SockCard('assets/images/socks/brown_sock.png', 'Brown Sock'),
-    SockCard('assets/images/socks/purple_sock.png', 'Purple Sock'),
-    SockCard('assets/images/socks/off_white_sock.png', 'Off White Sock'),
-    SockCard('assets/images/socks/green_sock.png', 'Green Sock'),
+    SockCard(imagePath: 'assets/images/socks/red_sock.png', name: 'Red Sock'),
+    SockCard(imagePath: 'assets/images/socks/blue_sock.png', name: 'Blue Sock'),
+    SockCard(
+        imagePath: 'assets/images/socks/black_sock.png', name: 'Black Sock'),
+    SockCard(imagePath: 'assets/images/socks/pink_sock.png', name: 'Pink Sock'),
+    SockCard(
+        imagePath: 'assets/images/socks/white_sock.png', name: 'White Sock'),
+    SockCard(imagePath: 'assets/images/socks/grey_sock.png', name: 'Grey Sock'),
+    SockCard(
+        imagePath: 'assets/images/socks/brown_sock.png', name: 'Brown Sock'),
+    SockCard(
+        imagePath: 'assets/images/socks/purple_sock.png', name: 'Purple Sock'),
+    SockCard(
+        imagePath: 'assets/images/socks/off_white_sock.png',
+        name: 'Off White Sock'),
+    SockCard(
+        imagePath: 'assets/images/socks/green_sock.png', name: 'Green Sock'),
     // Adding more sock varieties
-    SockCard('assets/images/socks/yellow_sock.png', 'Yellow Sock'),
-    SockCard('assets/images/socks/light_green_sock.png', 'Light Green Sock'),
     SockCard(
-        'assets/images/socks/pastel_purple_sock.png', 'Pastel Purple Sock'),
-    SockCard('assets/images/socks/sky_bleu_sock.png', 'Sky Bleu Sock'),
-    SockCard('assets/images/socks/burgundi_sock.png', 'Burgundi Sock'),
-    SockCard('assets/images/socks/burnt_orange_sock.png', 'Burnt Orange Sock'),
+        imagePath: 'assets/images/socks/yellow_sock.png', name: 'Yellow Sock'),
     SockCard(
-        'assets/images/socks/citrus_yellow_sock.png', 'Citrus Yellow Sock'),
+        imagePath: 'assets/images/socks/light_green_sock.png',
+        name: 'Light Green Sock'),
+    SockCard(
+        imagePath: 'assets/images/socks/pastel_purple_sock.png',
+        name: 'Pastel Purple Sock'),
+    SockCard(
+        imagePath: 'assets/images/socks/sky_bleu_sock.png',
+        name: 'Sky Bleu Sock'),
+    SockCard(
+        imagePath: 'assets/images/socks/burgundi_sock.png',
+        name: 'Burgundi Sock'),
+    SockCard(
+        imagePath: 'assets/images/socks/burnt_orange_sock.png',
+        name: 'Burnt Orange Sock'),
+    SockCard(
+        imagePath: 'assets/images/socks/citrus_yellow_sock.png',
+        name: 'Citrus Yellow Sock'),
   ];
 
   // Heart system variables - REMOVED (now using HeartManager)
 
   // Fallback emojis in case images aren't available
   final List<SockCard> fallbackSocks = const [
-    SockCard('🧦', 'Red Sock'),
-    SockCard('👟', 'Blue Sock'),
-    SockCard('👞', 'Grey Sock'),
-    SockCard('👠', 'Black Sock'),
-    SockCard('👡', 'Pink Sock'),
-    SockCard('🥿', 'Grey Sock'),
+    SockCard(imagePath: '🧦', name: 'Red Sock'),
+    SockCard(imagePath: '👟', name: 'Blue Sock'),
+    SockCard(imagePath: '👞', name: 'Grey Sock'),
+    SockCard(imagePath: '👠', name: 'Black Sock'),
+    SockCard(imagePath: '👡', name: 'Pink Sock'),
+    SockCard(imagePath: '🥿', name: 'Grey Sock'),
     // Adding more fallback varieties
-    SockCard('👣', 'Off White Sock'),
-    SockCard('🦶', 'Light Green Sock'),
-    SockCard('🧤', 'Purple Sock'),
-    SockCard('🧣', 'Burgundi Sock'),
-    SockCard('⭐', 'Burnt Orange Sock'),
-    SockCard('❤️', 'Citrus Yellow Sock'),
-    SockCard('⚡', 'Pastel Purple Sock'),
-    SockCard('🔷', 'Sky Bleu Sock'),
-    SockCard('🔴', 'Red Sock'),
-    SockCard('🔵', 'Blue Sock'),
-    SockCard('🟢', 'Green Sock'),
-    SockCard('🟡', 'Yellow Sock'),
-    SockCard('🟣', 'Purple Sock'),
-    SockCard('🟤', 'Brown Sock'),
+    SockCard(imagePath: '👣', name: 'Off White Sock'),
+    SockCard(imagePath: '🦶', name: 'Light Green Sock'),
+    SockCard(imagePath: '🧤', name: 'Purple Sock'),
+    SockCard(imagePath: '🧣', name: 'Burgundi Sock'),
+    SockCard(imagePath: '⭐', name: 'Burnt Orange Sock'),
+    SockCard(imagePath: '❤️', name: 'Citrus Yellow Sock'),
+    SockCard(imagePath: '⚡', name: 'Pastel Purple Sock'),
+    SockCard(imagePath: '🔷', name: 'Sky Bleu Sock'),
+    SockCard(imagePath: '🔴', name: 'Red Sock'),
+    SockCard(imagePath: '🔵', name: 'Blue Sock'),
+    SockCard(imagePath: '🟢', name: 'Green Sock'),
+    SockCard(imagePath: '🟡', name: 'Yellow Sock'),
+    SockCard(imagePath: '🟣', name: 'Purple Sock'),
+    SockCard(imagePath: '🟤', name: 'Brown Sock'),
   ];
 
   List<SockCard> cards = []; // Initialize to prevent LateInitializationError
@@ -148,12 +162,36 @@ class _MatchingGamePageState extends State<MatchingGamePage> {
     // Make sure we don't exceed available card types
     pairsCount = pairsCount.clamp(2, cardSymbols.length);
 
-    // For truly random sock selection
-    List<SockCard> shuffledSymbols = List.from(cardSymbols)..shuffle(Random());
-    final selectedSymbols = shuffledSymbols.take(pairsCount).toList();
+    // Use the new game logic service for smart card selection
+    final gameLogic = GameLogicService();
+    final selectedCards =
+        gameLogic.initializeCards(widget.level, useImages: useImages);
+
+    // Extract unique sock cards (remove duplicates for pair creation)
+    final uniqueSocks = <SockCard>[];
+    final seenPaths = <String>{};
+
+    for (final card in selectedCards) {
+      if (!seenPaths.contains(card.imagePath)) {
+        uniqueSocks.add(card);
+        seenPaths.add(card.imagePath);
+      }
+      if (uniqueSocks.length >= pairsCount) break;
+    }
+
+    // Debug: Print color distribution for early levels
+    if (widget.level <= 8) {
+      final distribution =
+          ColorGroupService.analyzeColorDistribution(uniqueSocks);
+      final difficulty =
+          ColorGroupService.calculateVisualDifficulty(uniqueSocks);
+      print('Level ${widget.level} Color Distribution: $distribution');
+      print(
+          'Level ${widget.level} Visual Difficulty: ${difficulty.toStringAsFixed(2)}');
+    }
 
     // Double the cards to create pairs
-    cards = [...selectedSymbols, ...selectedSymbols];
+    cards = [...uniqueSocks, ...uniqueSocks];
 
     // Shuffle the cards
     cards.shuffle(Random());

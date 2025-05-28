@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import '../models/sock_card.dart';
 import '../models/game_state.dart';
 import '../constants/app_constants.dart';
+import 'color_group_service.dart';
 
 class GameLogicService {
   static final GameLogicService _instance = GameLogicService._internal();
@@ -88,20 +90,16 @@ class GameLogicService {
     List<SockCard> selectedSymbols;
 
     if (useImages) {
-      // Shuffle and select from image paths
-      final shuffledPaths = List.from(AppConstants.sockImagePaths)
-        ..shuffle(Random());
-      selectedSymbols = shuffledPaths.take(pairsCount).map((path) {
-        final name = path.split('/').last.split('.').first.replaceAll('_', ' ');
-        return SockCard(imagePath: path, name: name);
-      }).toList();
+      // Use the new color group service for smart selection
+      selectedSymbols = ColorGroupService.selectSocksForLevel(
+          level, pairsCount, AppConstants.sockImagePaths);
     } else {
-      // Use fallback emojis
+      // Use fallback emojis with random selection
       final shuffledEmojis = List.from(AppConstants.fallbackEmojis)
         ..shuffle(Random());
       selectedSymbols = shuffledEmojis
           .take(pairsCount)
-          .map((emoji) => SockCard(imagePath: emoji, name: 'Sock ${emoji}'))
+          .map((emoji) => SockCard(imagePath: emoji, name: 'Sock $emoji'))
           .toList();
     }
 
