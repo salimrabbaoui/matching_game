@@ -34,12 +34,12 @@ class GameLogicService {
       case 9:
         return 21; // 21 pairs (7 columns * 6 rows = 42 cards)
       default:
-        // For levels beyond 9, continue with a progressive pattern
-        if (level <= 15) {
-          return 21 + (level - 9); // Gradually increase by 1 pair per level
-        } else {
-          return min(25, 25); // Cap at 25 pairs for very high levels
+        // For levels beyond 9, continue with a pattern
+        if (level > 9) {
+          return 21 +
+              ((level - 9) * 2); // Increase by 2 pairs per level after 9
         }
+        return 6;
     }
   }
 
@@ -47,29 +47,34 @@ class GameLogicService {
   int calculateMaxMovesForLevel(int level) {
     final pairs = calculatePairsForLevel(level);
 
-    // Calculate progress through total levels (0.0 to 1.0)
-    double progressFactor =
-        min((level - 1) / (AppConstants.totalLevels - 1), 1.0);
-
-    // Start with multiplier of 3.0, end with 2.0
-    double multiplier = AppConstants.baseMultiplier - progressFactor;
-
-    // Calculate base moves
-    int baseMoves = (pairs * multiplier).floor();
-
-    // Apply level-specific adjustment
-    int levelMod = level % 3;
-    int movesAdjustment = 0;
-
-    if (levelMod == 1) {
-      movesAdjustment = 1; // Slightly easier
-    } else if (levelMod == 0) {
-      movesAdjustment = -1; // Slightly harder
+   switch (level) {
+      case 1:
+        return 16; // 6 pairs × 3.16
+      case 2:
+        return 20; // 8 pairs × 2.87
+      case 3:
+        return 24; // 10 pairs × 2.8
+      case 4:
+        return 28; // 12 pairs × 2.33
+      case 5:
+        return 32; // 14 pairs × 2.28
+      case 6:
+        return 36; // 15 pairs × 2.4
+      case 7:
+        return 40; // 18 pairs × 2.22
+      case 8:
+        return 44; // 20 pairs × 2.2
+      case 9:
+        return 48; // 21 pairs × 2.28
+      default:
+        // For levels beyond 9, use a formula
+        if (level > 9) {
+          // Gradually reduce the multiplier as levels increase
+          double multiplier = max(2.3, 3.0 - ((level - 9) * 0.1));
+          return (pairs * multiplier).floor();
+        }
+        return pairs * 3; // Fallback
     }
-    // levelMod == 2 keeps standard calculation
-
-    return max(
-        baseMoves + movesAdjustment, pairs); // Never less than perfect play
   }
 
   /// Calculate time limit for time-based games
@@ -117,22 +122,22 @@ class GameLogicService {
 
   /// Get level color based on difficulty
   Color getLevelColor(int level) {
-    if (level <= 5) return AppConstants.successColor;
-    if (level <= 15) return AppConstants.accentColor;
-    if (level <= 30) return Colors.orange;
-    if (level <= 45) return AppConstants.errorColor;
+    if (level <= 3) return AppConstants.successColor;
+    if (level <= 6) return AppConstants.accentColor;
+    if (level <= 9) return Colors.orange;
+    if (level <= 12) return AppConstants.errorColor;
     return Colors.purple;
   }
 
   /// Get difficulty icon for level
   Widget getLevelDifficultyIcon(int level) {
-    if (level <= 5) {
+    if (level <= 3) {
       return const Icon(Icons.star, color: Colors.green, size: 20);
-    } else if (level <= 15) {
+    } else if (level <= 6) {
       return const Icon(Icons.star_half, color: Colors.orange, size: 20);
-    } else if (level <= 30) {
+    } else if (level <= 9) {
       return const Icon(Icons.whatshot, color: Colors.red, size: 20);
-    } else if (level <= 45) {
+    } else if (level <= 12) {
       return const Icon(Icons.local_fire_department,
           color: Colors.red, size: 20);
     } else {
@@ -142,10 +147,10 @@ class GameLogicService {
 
   /// Get difficulty label for level
   String getDifficultyLabel(int level) {
-    if (level <= 5) return 'Easy';
-    if (level <= 15) return 'Medium';
-    if (level <= 30) return 'Hard';
-    if (level <= 45) return 'Expert';
+    if (level <= 3) return 'Easy';
+    if (level <= 6) return 'Medium';
+    if (level <= 9) return 'Hard';
+    if (level <= 12) return 'Expert';
     return 'Master';
   }
 

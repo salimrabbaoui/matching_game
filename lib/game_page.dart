@@ -247,11 +247,11 @@ class _MatchingGamePageState extends State<MatchingGamePage> {
     // Generally allowing 2.5x to 3x the pairs for a reasonable challenge
     switch (level) {
       case 1:
-        return 19; // 6 pairs × 3.16
+        return 16; // 6 pairs × 3.16
       case 2:
-        return 23; // 8 pairs × 2.87
+        return 20; // 8 pairs × 2.87
       case 3:
-        return 28; // 10 pairs × 2.8
+        return 24; // 10 pairs × 2.8
       case 4:
         return 28; // 12 pairs × 2.33
       case 5:
