@@ -7,7 +7,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 //import 'subscription_dialog.dart';
 import 'subscription_service.dart';
 import 'heart_manager.dart';
+import 'core/services/ad_service.dart';
 import 'shared/widgets/game_app_bar.dart';
+import 'shared/widgets/ad_banner_widget.dart';
 import 'features/menu/menu_page.dart';
 
 class MatchingGamePage extends StatefulWidget {
@@ -207,11 +209,11 @@ class _MatchingGamePageState extends State<MatchingGamePage> {
     // Generally allowing 2.5x to 3x the pairs for a reasonable challenge
     switch (level) {
       case 1:
-        return 19; // 6 pairs × 2.66
+        return 19; // 6 pairs × 3.16
       case 2:
-        return 23; // 8 pairs × 2.5
+        return 23; // 8 pairs × 2.87
       case 3:
-        return 25; // 10 pairs × 2.4
+        return 28; // 10 pairs × 2.8
       case 4:
         return 28; // 12 pairs × 2.33
       case 5:
@@ -388,8 +390,13 @@ class _MatchingGamePageState extends State<MatchingGamePage> {
                   ),
                   const SizedBox(height: 10),
                   ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       Navigator.of(context).pop();
+
+                      // Show interstitial ad before moving to next level
+                      await AdService.instance
+                          .showLevelCompleteAd(widget.level);
+
                       Navigator.pushReplacement(
                         context,
                         PageRouteBuilder(
@@ -460,6 +467,9 @@ class _MatchingGamePageState extends State<MatchingGamePage> {
   }
 
   void showGameOverDialog() {
+    // Show game over interstitial ad first
+    AdService.instance.showGameOverAd();
+
     // Only show no hearts dialog if player actually has no hearts left
     if (HeartManager().hearts <= 0) {
       // Use the local _showNoHeartsDialog method for consistency
@@ -725,111 +735,115 @@ class _MatchingGamePageState extends State<MatchingGamePage> {
   }
 
   Widget _buildPortraitLayout() {
-    return Column(
-      children: [
-        // Game info section with minimal padding
-        Padding(
-          padding: const EdgeInsets.fromLTRB(12.0, 8.0, 12.0, 4.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Moves: $moves',
-                style:
-                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              Text(
-                'Remaining: ${maxMoves - moves}',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: (maxMoves - moves) <= 3 ? Colors.red : Colors.black,
+    return BottomBannerAdWidget(
+      child: Column(
+        children: [
+          // Game info section with minimal padding
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12.0, 8.0, 12.0, 4.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Moves: $moves',
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold),
                 ),
-              ),
-            ],
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 4.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Pairs: $pairsCount',
-                style: const TextStyle(fontSize: 14),
-              ),
-              Text(
-                'Highest Level: $highestLevel',
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.purple,
-                  fontWeight: FontWeight.bold,
+                Text(
+                  'Remaining: ${maxMoves - moves}',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: (maxMoves - moves) <= 3 ? Colors.red : Colors.black,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-        // Card grid with flex to fill space
-        Expanded(
-          flex: 1, // Take all available space
-          child: _buildCardGrid(),
-        ),
-      ],
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 4.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Pairs: $pairsCount',
+                  style: const TextStyle(fontSize: 14),
+                ),
+                Text(
+                  'Highest Level: $highestLevel',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Colors.purple,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Card grid with flex to fill space
+          Expanded(
+            flex: 1, // Take all available space
+            child: _buildCardGrid(),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildLandscapeLayout() {
-    return Row(
-      children: [
-        // Game info panel on the side
-        Container(
-          width: 150,
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Level: ${widget.level}',
-                style:
-                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Moves: $moves',
-                style: const TextStyle(fontSize: 16),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Remaining: ${maxMoves - moves}',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: (maxMoves - moves) <= 3 ? Colors.red : Colors.black,
+    return BottomBannerAdWidget(
+      child: Row(
+        children: [
+          // Game info panel on the side
+          Container(
+            width: 150,
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Level: ${widget.level}',
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Pairs: $pairsCount',
-                style: const TextStyle(fontSize: 14),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Highest: $highestLevel',
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.purple,
-                  fontWeight: FontWeight.bold,
+                const SizedBox(height: 8),
+                Text(
+                  'Moves: $moves',
+                  style: const TextStyle(fontSize: 16),
                 ),
-              ),
-            ],
+                const SizedBox(height: 4),
+                Text(
+                  'Remaining: ${maxMoves - moves}',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: (maxMoves - moves) <= 3 ? Colors.red : Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Pairs: $pairsCount',
+                  style: const TextStyle(fontSize: 14),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Highest: $highestLevel',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Colors.purple,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-        // Card grid takes remaining width
-        Expanded(
-          flex: 1,
-          child: _buildCardGrid(),
-        ),
-      ],
+          // Card grid takes remaining width
+          Expanded(
+            flex: 1,
+            child: _buildCardGrid(),
+          ),
+        ],
+      ),
     );
   }
 

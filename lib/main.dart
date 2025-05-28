@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'core/constants/app_constants.dart';
 import 'core/services/storage_service.dart';
+import 'core/services/ad_service.dart';
 import 'heart_manager.dart';
 import 'subscription_service.dart';
 import 'features/menu/menu_page.dart';
@@ -19,6 +20,7 @@ Future<void> _initializeServices() async {
     await StorageService().initialize();
     await HeartManager().initialize();
     await SubscriptionService().initialize();
+    await AdService.instance.initialize();
   } catch (e) {
     debugPrint('Error initializing services: $e');
   }

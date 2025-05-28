@@ -6,7 +6,9 @@ import 'package:in_app_purchase/in_app_purchase.dart';
 import 'subscription_dialog.dart';
 import 'subscription_service.dart';
 import 'heart_manager.dart';
+import 'core/services/ad_service.dart';
 import 'shared/widgets/game_app_bar.dart';
+import 'shared/widgets/ad_banner_widget.dart';
 import 'features/menu/menu_page.dart';
 
 class TimeGamePage extends StatefulWidget {
@@ -719,170 +721,176 @@ class _TimeGamePageState extends State<TimeGamePage> {
   }
 
   Widget _buildPortraitLayout() {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(12.0, 8.0, 12.0, 4.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Moves: $moves',
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold)),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Time: ${_formatTime(remainingSeconds)}',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: _getTimeColor(),
-                    ),
-                  ),
-                  if (showTimeBonus)
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      margin: const EdgeInsets.only(left: 8),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.green,
-                        borderRadius: BorderRadius.circular(12),
+    return BottomBannerAdWidget(
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12.0, 8.0, 12.0, 4.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Moves: $moves',
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold)),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Time: ${_formatTime(remainingSeconds)}',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: _getTimeColor(),
                       ),
-                      child: const Text(
-                        '+5',
+                    ),
+                    if (showTimeBonus)
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        margin: const EdgeInsets.only(left: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.green,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Text(
+                          '+5',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 4.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Pairs: $pairsCount',
+                    style: const TextStyle(fontSize: 14)),
+                Text(
+                  'Highest Level: $highestLevel',
+                  style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.purple,
+                      fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+          ),
+
+          // Always reserve space for banner (48px height)
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            height: 48,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: isPreviewMode
+                  ? Colors.orange.withOpacity(0.95)
+                  : Colors.transparent,
+              boxShadow: isPreviewMode
+                  ? [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]
+                  : null,
+            ),
+            child: isPreviewMode
+                ? Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.visibility, color: Colors.white, size: 20),
+                      SizedBox(width: 8),
+                      Text(
+                        'Memorize the cards! Game starts in $previewCountdown',
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 12,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                    ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 4.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Pairs: $pairsCount', style: const TextStyle(fontSize: 14)),
-              Text(
-                'Highest Level: $highestLevel',
-                style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.purple,
-                    fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-        ),
-
-        // Always reserve space for banner (48px height)
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          height: 48,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: isPreviewMode
-                ? Colors.orange.withOpacity(0.95)
-                : Colors.transparent,
-            boxShadow: isPreviewMode
-                ? [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ]
+                    ],
+                  )
                 : null,
           ),
-          child: isPreviewMode
-              ? Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.visibility, color: Colors.white, size: 20),
-                    SizedBox(width: 8),
-                    Text(
-                      'Memorize the cards! Game starts in $previewCountdown',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                )
-              : null,
-        ),
 
-        Expanded(child: _buildCardGrid()),
-      ],
+          Expanded(child: _buildCardGrid()),
+        ],
+      ),
     );
   }
 
   Widget _buildLandscapeLayout() {
-    return Row(
-      children: [
-        Container(
-          width: 150,
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Level: ${widget.level}',
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              Text('Moves: $moves', style: const TextStyle(fontSize: 16)),
-              const SizedBox(height: 4),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Time: ${_formatTime(remainingSeconds)}',
-                    style: TextStyle(fontSize: 16, color: _getTimeColor()),
-                  ),
-                  if (showTimeBonus)
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      margin: const EdgeInsets.only(left: 8),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.green,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Text(
-                        '+5',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
+    return BottomBannerAdWidget(
+      child: Row(
+        children: [
+          Container(
+            width: 150,
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Level: ${widget.level}',
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                Text('Moves: $moves', style: const TextStyle(fontSize: 16)),
+                const SizedBox(height: 4),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Time: ${_formatTime(remainingSeconds)}',
+                      style: TextStyle(fontSize: 16, color: _getTimeColor()),
+                    ),
+                    if (showTimeBonus)
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        margin: const EdgeInsets.only(left: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.green,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Text(
+                          '+5',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text('Pairs: $pairsCount', style: const TextStyle(fontSize: 14)),
-              const SizedBox(height: 4),
-              Text(
-                'Highest: $highestLevel',
-                style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.purple,
-                    fontWeight: FontWeight.bold),
-              ),
-            ],
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text('Pairs: $pairsCount',
+                    style: const TextStyle(fontSize: 14)),
+                const SizedBox(height: 4),
+                Text(
+                  'Highest: $highestLevel',
+                  style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.purple,
+                      fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
           ),
-        ),
-        Expanded(child: _buildCardGrid()),
-      ],
+          Expanded(child: _buildCardGrid()),
+        ],
+      ),
     );
   }
 
@@ -975,7 +983,7 @@ class _TimeGamePageState extends State<TimeGamePage> {
       24: {'columns': 4, 'rows': 6}, // Level 4: 12 pairs
       28: {'columns': 4, 'rows': 7}, // Level 5: 14 pairs
       30: {'columns': 5, 'rows': 6}, // Level 6: 15 pairs
-      36: {'columns': 6, 'rows': 6}, // Level 7: 18 pairs 
+      36: {'columns': 6, 'rows': 6}, // Level 7: 18 pairs
       40: {'columns': 5, 'rows': 8}, // Level 8: 20 pairs
       42: {'columns': 6, 'rows': 7}, // Level 9: 21 pairs
     };

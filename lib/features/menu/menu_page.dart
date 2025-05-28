@@ -226,8 +226,8 @@ class _MenuPageState extends State<MenuPage> {
                     // Unlimited Hearts Button
                     _buildButton(
                       context,
-                      text: 'Unlimited Hearts',
-                      icon: Icons.favorite,
+                      text: 'Remove Ads',
+                      icon: Icons.remove_red_eye,
                       color: Colors.red,
                       onPressed: _showSubscriptionDialog,
                     ),
