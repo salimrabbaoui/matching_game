@@ -12,6 +12,7 @@ import 'core/services/color_group_service.dart';
 import 'core/models/sock_card.dart';
 import 'shared/widgets/game_app_bar.dart';
 import 'shared/widgets/ad_banner_widget.dart';
+import 'shared/widgets/progress_timer_widget.dart';
 import 'features/menu/menu_page.dart';
 
 class TimeGamePage extends StatefulWidget {
@@ -183,7 +184,7 @@ class _TimeGamePageState extends State<TimeGamePage> {
     // Calculate pairs and game time based on the current level
     pairsCount = _calculatePairsForLevel(widget.level);
     gameTimeSeconds = _calculateTimeForLevel(widget.level);
-    remainingSeconds = gameTimeSeconds;
+    remainingSeconds = 0; // Start from 0 instead of gameTimeSeconds
 
     // Make sure we don't exceed available card types
     pairsCount = pairsCount.clamp(2, cardSymbols.length);
@@ -303,9 +304,9 @@ class _TimeGamePageState extends State<TimeGamePage> {
   void _startGameTimer() {
     gameTimer?.cancel();
     gameTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (remainingSeconds > 0) {
+      if (remainingSeconds < gameTimeSeconds) {
         setState(() {
-          remainingSeconds--;
+          remainingSeconds++; // Count up instead of down
         });
       } else {
         timer.cancel();
@@ -334,7 +335,7 @@ class _TimeGamePageState extends State<TimeGamePage> {
         isProcessing ||
         cardFlips[index] ||
         matchedPairs.contains(index) ||
-        remainingSeconds <= 0) {
+        remainingSeconds >= gameTimeSeconds) {
       return;
     }
 
@@ -359,9 +360,9 @@ class _TimeGamePageState extends State<TimeGamePage> {
       matchedPairs.add(firstCardIndex!);
       matchedPairs.add(secondCardIndex!);
 
-      // Add 5 seconds bonus for correct match
+      // Add 5 seconds bonus for correct match (increase max time instead of reducing current time)
       setState(() {
-        remainingSeconds += 5;
+        gameTimeSeconds += 5; // Increase the maximum time
         showTimeBonus = true;
       });
 
@@ -434,7 +435,7 @@ class _TimeGamePageState extends State<TimeGamePage> {
               ),
               const SizedBox(height: 16),
               Text(
-                'You matched all socks!\nTime remaining: ${_formatTime(remainingSeconds)}\nMoves: $moves',
+                'You matched all socks!\nTime taken: ${_formatTime(remainingSeconds)}\nMoves: $moves',
                 style: const TextStyle(fontSize: 16, color: Colors.black87),
                 textAlign: TextAlign.center,
               ),
@@ -638,8 +639,9 @@ class _TimeGamePageState extends State<TimeGamePage> {
   }
 
   Color _getTimeColor() {
-    if (remainingSeconds <= 10) return Colors.red;
-    if (remainingSeconds <= 30) return Colors.orange;
+    final timeLeft = gameTimeSeconds - remainingSeconds;
+    if (timeLeft <= 10) return Colors.red;
+    if (timeLeft <= 30) return Colors.orange;
     return Colors.green;
   }
 
@@ -768,25 +770,29 @@ class _TimeGamePageState extends State<TimeGamePage> {
     return BottomBannerAdWidget(
       child: Column(
         children: [
+          // Timer widget spanning the full width
           Padding(
             padding: const EdgeInsets.fromLTRB(12.0, 8.0, 12.0, 4.0),
+            child: ProgressTimerWidget(
+              currentTime: isPreviewMode ? previewCountdown : remainingSeconds,
+              maxTime: isPreviewMode ? 10 : gameTimeSeconds,
+              showMaxTime: !isPreviewMode,
+              progressColor: isPreviewMode ? Colors.orange : _getTimeColor(),
+              backgroundColor: Colors.grey.shade300,
+              textColor: isPreviewMode ? Colors.orange : _getTimeColor(),
+            ),
+          ),
+          // Moves and other info row
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 4.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Moves: $moves',
-                    style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold)),
                 Row(
-                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      'Time: ${_formatTime(remainingSeconds)}',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: _getTimeColor(),
-                      ),
-                    ),
+                    Text('Moves: $moves',
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
                     if (showTimeBonus)
                       AnimatedContainer(
                         duration: const Duration(milliseconds: 300),
@@ -798,7 +804,7 @@ class _TimeGamePageState extends State<TimeGamePage> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Text(
-                          '+5',
+                          '+5s',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 12,
@@ -807,6 +813,13 @@ class _TimeGamePageState extends State<TimeGamePage> {
                         ),
                       ),
                   ],
+                ),
+                Text(
+                  'Highest Level: $highestLevel',
+                  style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.purple,
+                      fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -818,53 +831,9 @@ class _TimeGamePageState extends State<TimeGamePage> {
               children: [
                 Text('Pairs: $pairsCount',
                     style: const TextStyle(fontSize: 14)),
-                Text(
-                  'Highest Level: $highestLevel',
-                  style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.purple,
-                      fontWeight: FontWeight.bold),
-                ),
+                const SizedBox(), // Empty space for balance
               ],
             ),
-          ),
-
-          // Always reserve space for banner (48px height)
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            height: 48,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: isPreviewMode
-                  ? Colors.orange.withOpacity(0.95)
-                  : Colors.transparent,
-              boxShadow: isPreviewMode
-                  ? [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ]
-                  : null,
-            ),
-            child: isPreviewMode
-                ? Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.visibility, color: Colors.white, size: 20),
-                      SizedBox(width: 8),
-                      Text(
-                        'Memorize the cards! Game starts in $previewCountdown',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  )
-                : null,
           ),
 
           Expanded(child: _buildCardGrid()),
@@ -878,7 +847,7 @@ class _TimeGamePageState extends State<TimeGamePage> {
       child: Row(
         children: [
           Container(
-            width: 150,
+            width: 200,
             padding: const EdgeInsets.all(12.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -887,16 +856,24 @@ class _TimeGamePageState extends State<TimeGamePage> {
                 Text('Level: ${widget.level}',
                     style: const TextStyle(
                         fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 12),
+
+                // Progress timer widget
+                ProgressTimerWidget(
+                  currentTime:
+                      isPreviewMode ? previewCountdown : remainingSeconds,
+                  maxTime: isPreviewMode ? 10 : gameTimeSeconds,
+                  showMaxTime: !isPreviewMode,
+                  progressColor:
+                      isPreviewMode ? Colors.orange : _getTimeColor(),
+                  backgroundColor: Colors.grey.shade300,
+                  textColor: isPreviewMode ? Colors.orange : _getTimeColor(),
+                ),
+
                 const SizedBox(height: 8),
-                Text('Moves: $moves', style: const TextStyle(fontSize: 16)),
-                const SizedBox(height: 4),
                 Row(
-                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      'Time: ${_formatTime(remainingSeconds)}',
-                      style: TextStyle(fontSize: 16, color: _getTimeColor()),
-                    ),
+                    Text('Moves: $moves', style: const TextStyle(fontSize: 16)),
                     if (showTimeBonus)
                       AnimatedContainer(
                         duration: const Duration(milliseconds: 300),
@@ -908,7 +885,7 @@ class _TimeGamePageState extends State<TimeGamePage> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Text(
-                          '+5',
+                          '+5s',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 12,
