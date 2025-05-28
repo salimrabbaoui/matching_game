@@ -1097,22 +1097,8 @@ class _MatchingGamePageState extends State<MatchingGamePage> {
           ),
         );
       },
-      onShowSubscription: () {
-        // This will be called after returning to menu to show subscription dialog
-        // Navigate to menu with subscription dialog flag
-        if (mounted && context.mounted) {
-          try {
-            print('Navigating to menu with subscription dialog');
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(
-                builder: (context) => MenuPage(showSubscriptionDialog: true),
-              ),
-            );
-          } catch (e) {
-            print('Navigation error: $e');
-          }
-        }
-      },
+      // Remove onShowSubscription to prevent redirect to menu
+      // The subscription dialog will be shown directly instead
       showRechargeButton: true, // Show the test recharge button
     );
   }

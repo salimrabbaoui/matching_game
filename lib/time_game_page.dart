@@ -1121,22 +1121,6 @@ class _TimeGamePageState extends State<TimeGamePage> {
           }
         }
       },
-      onShowSubscription: () {
-        // This will be called after returning to menu to show subscription dialog
-        // Navigate to menu with subscription dialog flag
-        if (mounted && context.mounted) {
-          try {
-            print('Navigating to menu with subscription dialog from time game');
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(
-                builder: (context) => MenuPage(showSubscriptionDialog: true),
-              ),
-            );
-          } catch (e) {
-            print('Navigation error: $e');
-          }
-        }
-      },
     );
   }
 
