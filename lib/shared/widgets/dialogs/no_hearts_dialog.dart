@@ -6,29 +6,21 @@ import 'base_dialog.dart';
 
 class NoHeartsDialog extends StatefulWidget {
   final VoidCallback onBackToMenu;
-  final VoidCallback? onHeartRecharge;
-  final bool showRechargeButton;
 
   const NoHeartsDialog({
     super.key,
     required this.onBackToMenu,
-    this.onHeartRecharge,
-    this.showRechargeButton = false,
   });
 
   static void show({
     required BuildContext context,
     required VoidCallback onBackToMenu,
-    VoidCallback? onHeartRecharge,
-    bool showRechargeButton = false,
   }) {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => NoHeartsDialog(
         onBackToMenu: onBackToMenu,
-        onHeartRecharge: onHeartRecharge,
-        showRechargeButton: showRechargeButton,
       ),
     );
   }
@@ -126,8 +118,6 @@ class _NoHeartsDialogState extends State<NoHeartsDialog> {
                         NoHeartsDialog.show(
                           context: context,
                           onBackToMenu: widget.onBackToMenu,
-                          onHeartRecharge: widget.onHeartRecharge,
-                          showRechargeButton: widget.showRechargeButton,
                         );
                       }
                     });
@@ -173,46 +163,6 @@ class _NoHeartsDialogState extends State<NoHeartsDialog> {
               ),
             ),
           ),
-
-          if (widget.showRechargeButton) ...[
-            const SizedBox(height: AppConstants.spacing),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  if (widget.onHeartRecharge != null) {
-                    widget.onHeartRecharge!();
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppConstants.successColor,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    vertical: AppConstants.padding,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(AppConstants.borderRadius),
-                  ),
-                ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.battery_charging_full),
-                    SizedBox(width: AppConstants.spacing),
-                    Text(
-                      'Recharge Hearts (Test)',
-                      style: TextStyle(
-                        fontSize: AppConstants.bodyFontSize,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
         ],
       ),
       actions: [

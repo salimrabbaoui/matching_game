@@ -235,36 +235,6 @@ class SubscriptionService {
                   ],
                 ),
               ),
-              if (showRechargeButton) ...[
-                const SizedBox(height: 12),
-                // TEST: Recharge Hearts button
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    if (onHeartRecharge != null) onHeartRecharge();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    foregroundColor: Colors.white,
-                    minimumSize: Size(double.infinity, 44),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      Icon(Icons.bolt, color: Colors.yellow),
-                      SizedBox(width: 8),
-                      Text(
-                        'Recharge Hearts (Test)',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
               const SizedBox(height: 12),
               // Back to menu button
               ElevatedButton(
