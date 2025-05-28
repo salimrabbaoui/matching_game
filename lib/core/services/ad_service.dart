@@ -71,9 +71,10 @@ class AdService {
       _isInitialized = true;
       debugPrint('AdService: Mobile Ads SDK initialized successfully');
 
-      // Pre-load only interstitial ads with delay to avoid initialization conflicts
+      // Pre-load both interstitial and banner ads with delay to avoid initialization conflicts
       Future.delayed(const Duration(seconds: 1), () {
         loadInterstitialAd();
+        loadBannerAd(); // Also preload banner ads
       });
     } catch (e) {
       debugPrint('AdService: Failed to initialize Mobile Ads SDK: $e');
@@ -89,8 +90,13 @@ class AdService {
       return;
     }
 
+    debugPrint('AdService: Loading banner ad at ${DateTime.now()}...');
+
     // Dispose existing banner ad if any
-    _bannerAd?.dispose();
+    if (_bannerAd != null) {
+      debugPrint('AdService: Disposing existing banner ad');
+      _bannerAd?.dispose();
+    }
     _isBannerAdReady = false;
 
     try {
@@ -100,17 +106,20 @@ class AdService {
         request: const AdRequest(),
         listener: BannerAdListener(
           onAdLoaded: (ad) {
-            debugPrint('AdService: Banner ad loaded successfully');
+            debugPrint(
+                'AdService: Banner ad loaded successfully at ${DateTime.now()}');
             _isBannerAdReady = true;
           },
           onAdFailedToLoad: (ad, error) {
-            debugPrint('AdService: Banner ad failed to load: $error');
+            debugPrint(
+                'AdService: Banner ad failed to load at ${DateTime.now()}: $error');
             _isBannerAdReady = false;
             ad.dispose();
             _bannerAd = null;
 
             // Retry loading after a delay
             Future.delayed(const Duration(seconds: 30), () {
+              debugPrint('AdService: Retrying banner ad load after failure...');
               loadBannerAd();
             });
           },
@@ -123,7 +132,9 @@ class AdService {
         ),
       );
 
+      debugPrint('AdService: Starting banner ad load...');
       await _bannerAd!.load();
+      debugPrint('AdService: Banner ad load() call completed');
     } catch (e) {
       debugPrint('AdService: Error loading banner ad: $e');
       _isBannerAdReady = false;
@@ -263,6 +274,18 @@ class AdService {
 
     // Don't show ads for premium users
     return !hasUnlimitedHearts;
+  }
+
+  /// Get current ad status for debugging
+  Map<String, dynamic> getAdStatus() {
+    return {
+      'isInitialized': _isInitialized,
+      'isBannerAdReady': _isBannerAdReady,
+      'isInterstitialAdReady': _isInterstitialAdReady,
+      'isLoadingInterstitial': _isLoadingInterstitial,
+      'lastInterstitialShown': _lastInterstitialShown?.toIso8601String(),
+      'bannerAdExists': _bannerAd != null,
+    };
   }
 
   /// Helper method to check if enough time has passed to show another interstitial
