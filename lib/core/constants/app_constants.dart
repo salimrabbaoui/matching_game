@@ -1,15 +1,28 @@
 import 'package:flutter/material.dart';
 
 class AppConstants {
-  // Colors
-  static const Color primaryColor = Color(0xFF5D9CEC); // Soft blue
-  static const Color secondaryColor = Color(0xFF48CFAD); // Mint
-  static const Color accentColor = Color(0xFFFFCE54); // Soft yellow
-  static const Color backgroundColor = Color(0xFFF5F7FA); // Light gray
-  static const Color successColor = Color(0xFFA0D468); // Light green
-  static const Color cardColor = Color(0xFF4FC1E9); // Sky blue
-  static const Color errorColor = Color(0xFFED5565); // Light red
-  static const Color warningColor = Color(0xFFFFCE54); // Yellow
+  // Colors - Updated to match screenshot aesthetic
+  static const Color primaryColor = Color(0xFF4A90E2); // Blue from screenshot
+  static const Color secondaryColor = Color(0xFF7BB3F7); // Lighter blue
+  static const Color accentColor = Color(0xFFFFC947); // Warm yellow accent
+  static const Color backgroundColor =
+      Color(0xFFF8FAFE); // Very light blue-white
+  static const Color successColor = Color(0xFF6BCF7F); // Soft green
+  static const Color cardColor = Color(0xFFFFFFFF); // Pure white for cards
+  static const Color errorColor = Color(0xFFFF6B6B); // Soft coral red
+  static const Color warningColor = Color(0xFFFFC947); // Same as accent
+
+  // Gradient colors for backgrounds
+  static const Color gradientStart = Color(0xFF4A90E2); // Main blue
+  static const Color gradientEnd = Color(0xFF7BB3F7); // Lighter blue
+  static const Color cloudColor = Color(0xFFFFFFFF); // White clouds
+
+  // Button colors that harmonize
+  static const Color timeButtonColor = Color(0xFF5BA0F2); // Blue variant
+  static const Color classicButtonColor = Color(0xFF4A90E2); // Primary blue
+  static const Color helpButtonColor = Color(0xFF7BB3F7); // Light blue
+  static const Color subscriptionButtonColor =
+      Color(0xFFFFC947); // Yellow accent
 
   // Heart System
   static const int maxHearts = 5;

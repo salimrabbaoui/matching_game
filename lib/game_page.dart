@@ -14,6 +14,7 @@ import 'core/models/sock_card.dart';
 import 'shared/widgets/game_app_bar.dart';
 import 'shared/widgets/ad_banner_widget.dart';
 import 'features/menu/menu_page.dart';
+import 'core/constants/app_constants.dart';
 
 class MatchingGamePage extends StatefulWidget {
   final int level;
@@ -109,12 +110,12 @@ class _MatchingGamePageState extends State<MatchingGamePage> {
   int highestLevel = 1; // Default value to prevent LateInitializationError
 
   // Replace the current color constants with these
-  final Color primaryColor = Color(0xFF5D9CEC); // Soft blue
-  final Color secondaryColor = Color(0xFF48CFAD); // Mint
-  final Color accentColor = Color(0xFFFFCE54); // Soft yellow
-  final Color backgroundColor = Color(0xFFF5F7FA); // Light gray
-  final Color successColor = Color(0xFFA0D468); // Light green
-  final Color cardColor = Color(0xFF4FC1E9); // Sky blue
+  final Color primaryColor = AppConstants.primaryColor;
+  final Color secondaryColor = AppConstants.secondaryColor;
+  final Color accentColor = AppConstants.accentColor;
+  final Color backgroundColor = AppConstants.backgroundColor;
+  final Color successColor = AppConstants.successColor;
+  final Color cardColor = AppConstants.cardColor;
 
   // In-app purchase variables - REMOVED (now using SubscriptionService)
 

@@ -6,6 +6,7 @@ import 'package:in_app_purchase/in_app_purchase.dart';
 import 'subscription_dialog.dart';
 import 'subscription_service.dart';
 import 'heart_manager.dart';
+import 'core/constants/app_constants.dart';
 import 'core/services/ad_service.dart';
 import 'core/services/game_logic_service.dart';
 import 'core/services/color_group_service.dart';
@@ -137,12 +138,12 @@ class _TimeGamePageState extends State<TimeGamePage> {
   bool isShowingLevelSummary = false;
 
   // Color scheme
-  final Color primaryColor = Color(0xFF5D9CEC);
-  final Color secondaryColor = Color(0xFF48CFAD);
-  final Color accentColor = Color(0xFFFFCE54);
-  final Color backgroundColor = Color(0xFFF5F7FA);
-  final Color successColor = Color(0xFFA0D468);
-  final Color cardColor = Color(0xFF4FC1E9);
+  final Color primaryColor = AppConstants.primaryColor;
+  final Color secondaryColor = AppConstants.secondaryColor;
+  final Color accentColor = AppConstants.accentColor;
+  final Color backgroundColor = AppConstants.backgroundColor;
+  final Color successColor = AppConstants.successColor;
+  final Color cardColor = AppConstants.cardColor;
 
   // In-app purchase variables - REMOVED (now using SubscriptionService)
 
@@ -640,9 +641,11 @@ class _TimeGamePageState extends State<TimeGamePage> {
 
   Color _getTimeColor() {
     final timeLeft = gameTimeSeconds - remainingSeconds;
-    if (timeLeft <= 10) return Colors.red;
-    if (timeLeft <= 30) return Colors.orange;
-    return Colors.green;
+    if (timeLeft <= 10)
+      return AppConstants.errorColor; // Soft coral red for urgency
+    if (timeLeft <= 30)
+      return AppConstants.primaryColor; // Warm yellow for caution
+    return AppConstants.primaryColor; // Blue for normal time
   }
 
   void _showLevelSummary() {
@@ -654,7 +657,12 @@ class _TimeGamePageState extends State<TimeGamePage> {
       context: context,
       barrierDismissible: true,
       builder: (context) => AlertDialog(
-        title: Text('Time Challenge Level ${widget.level}'),
+        backgroundColor: AppConstants.cloudColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          'Time Challenge Level ${widget.level}',
+          style: TextStyle(color: AppConstants.primaryColor),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -662,23 +670,25 @@ class _TimeGamePageState extends State<TimeGamePage> {
             _buildSummaryItem(
               icon: Icons.grid_4x4,
               text: 'Find $pairsCount pairs of socks',
+              color: AppConstants.primaryColor,
             ),
             const SizedBox(height: 10),
             _buildSummaryItem(
               icon: Icons.timer,
               text: 'Start with 30 seconds',
+              color: AppConstants.primaryColor,
             ),
             const SizedBox(height: 10),
             _buildSummaryItem(
               icon: Icons.add_circle,
               text: '+5 seconds for each correct match',
-              color: Colors.green,
+              color: AppConstants.successColor,
             ),
             const SizedBox(height: 10),
             _buildSummaryItem(
               icon: Icons.flash_on,
               text: 'Keep matching to stay alive!',
-              color: Colors.orange,
+              color: AppConstants.accentColor,
             ),
           ],
         ),
@@ -692,6 +702,9 @@ class _TimeGamePageState extends State<TimeGamePage> {
               initGame();
               startGameTimers();
             },
+            style: TextButton.styleFrom(
+              foregroundColor: AppConstants.primaryColor,
+            ),
             child: const Text('Start Challenge!'),
           ),
         ],
@@ -712,13 +725,21 @@ class _TimeGamePageState extends State<TimeGamePage> {
   Widget _buildSummaryItem({
     required IconData icon,
     required String text,
-    Color color = Colors.blue,
+    Color color = AppConstants.primaryColor, // Changed default to blue
   }) {
     return Row(
       children: [
         Icon(icon, color: color, size: 20),
         const SizedBox(width: 10),
-        Expanded(child: Text(text, style: TextStyle(fontSize: 16))),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 16,
+              color: AppConstants.primaryColor.withOpacity(0.8),
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -800,7 +821,7 @@ class _TimeGamePageState extends State<TimeGamePage> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: Colors.green,
+                          color: AppConstants.successColor,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Text(
@@ -864,10 +885,13 @@ class _TimeGamePageState extends State<TimeGamePage> {
                       isPreviewMode ? previewCountdown : remainingSeconds,
                   maxTime: isPreviewMode ? 10 : gameTimeSeconds,
                   showMaxTime: !isPreviewMode,
-                  progressColor:
-                      isPreviewMode ? Colors.orange : _getTimeColor(),
-                  backgroundColor: Colors.grey.shade300,
-                  textColor: isPreviewMode ? Colors.orange : _getTimeColor(),
+                  progressColor: isPreviewMode
+                      ? AppConstants.primaryColor
+                      : _getTimeColor(),
+                  backgroundColor: AppConstants.backgroundColor,
+                  textColor: isPreviewMode
+                      ? AppConstants.primaryColor
+                      : _getTimeColor(),
                 ),
 
                 const SizedBox(height: 8),
@@ -881,7 +905,7 @@ class _TimeGamePageState extends State<TimeGamePage> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: Colors.green,
+                          color: AppConstants.successColor,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Text(

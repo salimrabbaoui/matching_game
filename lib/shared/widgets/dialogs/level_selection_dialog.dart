@@ -43,7 +43,7 @@ class LevelSelectionDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final gameLogic = GameLogicService();
     final color = primaryColor ??
-        (isTimeMode ? Colors.orange : AppConstants.primaryColor);
+        (isTimeMode ? AppConstants.timeButtonColor : AppConstants.primaryColor);
     final dialogTitle =
         title ?? (isTimeMode ? 'Time Challenge' : 'Select Level');
 
@@ -53,11 +53,11 @@ class LevelSelectionDialog extends StatelessWidget {
           : Icon(Icons.sports_esports, color: color, size: 40),
       title: dialogTitle,
       gradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
         colors: [
-          color.withOpacity(0.1),
-          color.withOpacity(0.05),
+          AppConstants.cloudColor,
+          AppConstants.gradientEnd.withOpacity(0.1),
         ],
       ),
       content: Container(
@@ -95,6 +95,8 @@ class LevelSelectionDialog extends StatelessWidget {
         DialogButton(
           text: 'Cancel',
           onPressed: () => Navigator.of(context).pop(),
+          backgroundColor: Colors.grey.shade300,
+          textColor: AppConstants.primaryColor,
         ),
       ],
     );
@@ -116,6 +118,16 @@ class LevelSelectionDialog extends StatelessWidget {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.symmetric(vertical: 2),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
       child: ElevatedButton(
         onPressed: () {
           Navigator.of(context).pop();
@@ -131,7 +143,7 @@ class LevelSelectionDialog extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppConstants.borderRadius),
           ),
-          elevation: 3,
+          elevation: 0, // Remove default elevation since we have custom shadow
         ),
         child: Row(
           children: [

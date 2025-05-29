@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/constants/app_constants.dart';
 import '../../core/services/storage_service.dart';
 import '../../shared/widgets/dialogs/level_selection_dialog.dart';
 import '../../game_page.dart';
@@ -60,7 +61,7 @@ class _MenuPageState extends State<MenuPage> {
       onLevelSelected: (level) => _startClassicGame(level),
       isTimeMode: false,
       title: 'Select Level',
-      primaryColor: Colors.purple,
+      primaryColor: AppConstants.classicButtonColor,
     );
   }
 
@@ -71,7 +72,7 @@ class _MenuPageState extends State<MenuPage> {
       onLevelSelected: (level) => _startTimeGame(level),
       isTimeMode: true,
       title: 'Time Challenge',
-      primaryColor: Colors.orange,
+      primaryColor: AppConstants.timeButtonColor,
     );
   }
 
@@ -134,141 +135,198 @@ class _MenuPageState extends State<MenuPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Colors.purple.shade100,
-              Colors.blue.shade100,
+              AppConstants.gradientStart,
+              AppConstants.gradientEnd,
             ],
           ),
         ),
         child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Title with shadow
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.8),
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 10,
-                            spreadRadius: 1,
-                          ),
-                        ],
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 16),
-                      child: const Text(
-                        'Sock Matching Game',
-                        style: TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.purple,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
+          child: Stack(
+            children: [
+              // Cloud decorations to match screenshot
+              _buildCloudDecorations(),
 
-                    const SizedBox(height: 40),
-
-                    // Sock images in a row
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              Center(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        _buildSockImage('assets/images/socks/red_sock.png'),
-                        _buildSockImage('assets/images/socks/blue_sock.png'),
-                        _buildSockImage('assets/images/socks/green_sock.png'),
+                        // Title with shadow - keeping your game title
+                        Container(
+                          decoration: BoxDecoration(
+                            color: AppConstants.cloudColor.withOpacity(0.95),
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 15,
+                                spreadRadius: 2,
+                              ),
+                            ],
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 24, vertical: 20),
+                          child: const Text(
+                            'Sock Matching Game',
+                            style: TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                              color: AppConstants.primaryColor,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+
+                        const SizedBox(height: 40),
+
+                        // Sock images in a row
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _buildSockImage('assets/images/socks/red_sock.png'),
+                            _buildSockImage(
+                                'assets/images/socks/blue_sock.png'),
+                            _buildSockImage(
+                                'assets/images/socks/green_sock.png'),
+                          ],
+                        ),
+
+                        const SizedBox(height: 40),
+
+                        const SizedBox(height: 15),
+
+                        // Time Mode Button
+                        _buildButton(
+                          context,
+                          text: highestTimeLevel > 1
+                              ? 'Time Challenge'
+                              : 'New Time Challenge',
+                          icon: Icons.timer,
+                          color: AppConstants.timeButtonColor,
+                          onPressed: highestTimeLevel > 1
+                              ? _showTimeLevelSelection
+                              : () => _startTimeGame(1),
+                        ),
+
+                        const SizedBox(height: 15),
+
+                        // Select Level Button
+                        _buildButton(
+                          context,
+                          text: 'Moves Challenge',
+                          icon: Icons.list,
+                          color: AppConstants.classicButtonColor,
+                          onPressed: _showClassicLevelSelection,
+                        ),
+
+                        const SizedBox(height: 15),
+
+                        // Subscription Button
+                        _buildButton(
+                          context,
+                          text: 'Remove Ads',
+                          icon: Icons.remove_red_eye,
+                          color: AppConstants.subscriptionButtonColor,
+                          onPressed: _showSubscriptionDialog,
+                        ),
+
+                        const SizedBox(height: 30),
+
+                        // How to Play Button
+                        _buildButton(
+                          context,
+                          text: 'How to Play',
+                          icon: Icons.help_outline,
+                          color: AppConstants.helpButtonColor,
+                          onPressed: () => _showHowToPlayDialog(context),
+                        ),
+
+                        const SizedBox(height: 30),
+
+                        // Game description with new colors
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: AppConstants.cloudColor.withOpacity(0.8),
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: const Text(
+                            'Match all the sock pairs!',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontStyle: FontStyle.italic,
+                              color: AppConstants.primaryColor,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
-
-                    const SizedBox(height: 40),
-
-                    const SizedBox(height: 15),
-
-                    // Time Mode Button
-                    _buildButton(
-                      context,
-                      text: highestTimeLevel > 1
-                          ? 'Time Challenge'
-                          : 'New Time Challenge',
-                      icon: Icons.timer,
-                      color: Colors.orange,
-                      onPressed: highestTimeLevel > 1
-                          ? _showTimeLevelSelection
-                          : () => _startTimeGame(1),
-                    ),
-
-                    const SizedBox(height: 15),
-
-                    // Select Level Button (only if they've reached higher levels)
-                    //if (highestLevel > 1 && !isLoading)
-                    _buildButton(
-                      context,
-                      text: 'Moves Challenge',
-                      icon: Icons.list,
-                      color: Colors.blue,
-                      onPressed: _showClassicLevelSelection,
-                    ),
-
-                    const SizedBox(height: 15),
-
-                    // Unlimited Hearts Button
-                    _buildButton(
-                      context,
-                      text: 'Remove Ads',
-                      icon: Icons.remove_red_eye,
-                      color: Colors.red,
-                      onPressed: _showSubscriptionDialog,
-                    ),
-
-                    const SizedBox(height: 30),
-
-                    // How to Play Button
-                    _buildButton(
-                      context,
-                      text: 'How to Play',
-                      icon: Icons.help_outline,
-                      color: Colors.purple,
-                      onPressed: () => _showHowToPlayDialog(context),
-                    ),
-
-                    // const SizedBox(height: 15),
-
-                    // About Button
-                    /*  _buildButton(
-                      context,
-                      text: 'About',
-                      icon: Icons.info_outline,
-                      color: Colors.indigo,
-                      onPressed: () => _showAboutDialog(context),
-                    ),*/
-
-                    const SizedBox(height: 30),
-
-                    // Little animation hint
-                    const Text(
-                      'Match all the sock pairs!',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontStyle: FontStyle.italic,
-                        color: Colors.deepPurple,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildCloudDecorations() {
+    return Stack(
+      children: [
+        // Top clouds
+        Positioned(
+          top: -20,
+          left: -50,
+          child: _buildCloudShape(120, 60),
+        ),
+        Positioned(
+          top: 30,
+          right: -30,
+          child: _buildCloudShape(100, 50),
+        ),
+        Positioned(
+          top: 150,
+          left: -40,
+          child: _buildCloudShape(80, 40),
+        ),
+
+        // Bottom clouds
+        Positioned(
+          bottom: 100,
+          right: -60,
+          child: _buildCloudShape(140, 70),
+        ),
+        Positioned(
+          bottom: -10,
+          left: -20,
+          child: _buildCloudShape(120, 60),
+        ),
+        Positioned(
+          bottom: 200,
+          left: 50,
+          child: _buildCloudShape(90, 45),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCloudShape(double width, double height) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: AppConstants.cloudColor.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(height / 2),
       ),
     );
   }
@@ -280,13 +338,13 @@ class _MenuPageState extends State<MenuPage> {
         width: 80,
         height: 80,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppConstants.cloudColor,
           borderRadius: BorderRadius.circular(15),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 5,
-              offset: const Offset(0, 3),
+              color: Colors.black.withOpacity(0.15),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
@@ -359,11 +417,15 @@ class _MenuPageState extends State<MenuPage> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Row(
+        backgroundColor: AppConstants.cloudColor,
+        title: Row(
           children: [
-            Icon(Icons.help_outline, color: Colors.blue),
-            SizedBox(width: 10),
-            Text('How to Play'),
+            Icon(Icons.help_outline, color: AppConstants.primaryColor),
+            const SizedBox(width: 10),
+            Text(
+              'How to Play',
+              style: TextStyle(color: AppConstants.primaryColor),
+            ),
           ],
         ),
         content: const SingleChildScrollView(
@@ -402,6 +464,9 @@ class _MenuPageState extends State<MenuPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
+            style: TextButton.styleFrom(
+              foregroundColor: AppConstants.primaryColor,
+            ),
             child: const Text('Got it!', style: TextStyle(fontSize: 16)),
           ),
         ],
@@ -465,10 +530,16 @@ class _InstructionItem extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, color: Colors.blue, size: 20),
+        Icon(icon, color: AppConstants.primaryColor, size: 20),
         const SizedBox(width: 10),
         Expanded(
-          child: Text(text, style: const TextStyle(fontSize: 16)),
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 16,
+              color: AppConstants.primaryColor.withOpacity(0.8),
+            ),
+          ),
         ),
       ],
     );

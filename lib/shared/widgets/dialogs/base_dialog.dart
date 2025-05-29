@@ -64,6 +64,7 @@ class BaseDialog extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppConstants.largeBorderRadius),
       ),
+      backgroundColor: Colors.transparent,
       child: Container(
         constraints: BoxConstraints(
           maxWidth: maxWidth ?? 400,
@@ -71,17 +72,25 @@ class BaseDialog extends StatelessWidget {
         ),
         padding: padding ?? const EdgeInsets.all(AppConstants.largePadding),
         decoration: BoxDecoration(
-          color: backgroundColor,
+          color: backgroundColor ?? AppConstants.cloudColor,
           gradient: gradient ??
               LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
+                  AppConstants.cloudColor,
                   AppConstants.backgroundColor,
-                  AppConstants.backgroundColor.withOpacity(0.9),
                 ],
               ),
           borderRadius: BorderRadius.circular(AppConstants.largeBorderRadius),
+          boxShadow: [
+            BoxShadow(
+              color: AppConstants.primaryColor.withOpacity(0.2),
+              blurRadius: 15,
+              spreadRadius: 3,
+              offset: const Offset(0, 5),
+            ),
+          ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -95,7 +104,7 @@ class BaseDialog extends StatelessWidget {
               style: const TextStyle(
                 fontSize: AppConstants.headingFontSize,
                 fontWeight: FontWeight.bold,
-                color: Colors.black87,
+                color: AppConstants.primaryColor,
               ),
               textAlign: TextAlign.center,
             ),

@@ -183,17 +183,10 @@ class SubscriptionService {
                     showSubscriptionDialog(
                       context,
                       onCancel: () {
-                        Future.delayed(const Duration(milliseconds: 100), () {
-                          if (context.mounted) {
-                            showNoHeartsDialog(
-                              context,
-                              onBackToMenu: onBackToMenu,
-                              onHeartRecharge: onHeartRecharge,
-                              onShowSubscription: onShowSubscription,
-                              showRechargeButton: showRechargeButton,
-                            );
-                          }
-                        });
+                        // FIXED: When user clicks "Maybe Later", take them back to menu
+                        // instead of showing the no hearts dialog again
+                        print('User clicked Maybe Later - navigating to menu');
+                        onBackToMenu();
                       },
                       onSuccess: (type) {
                         try {

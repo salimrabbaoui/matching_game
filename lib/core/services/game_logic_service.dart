@@ -47,7 +47,7 @@ class GameLogicService {
   int calculateMaxMovesForLevel(int level) {
     final pairs = calculatePairsForLevel(level);
 
-   switch (level) {
+    switch (level) {
       case 1:
         return 16; // 6 pairs × 3.16
       case 2:
@@ -122,26 +122,28 @@ class GameLogicService {
 
   /// Get level color based on difficulty
   Color getLevelColor(int level) {
-    if (level <= 3) return AppConstants.successColor;
-    if (level <= 6) return AppConstants.accentColor;
-    if (level <= 9) return Colors.orange;
-    if (level <= 12) return AppConstants.errorColor;
-    return Colors.purple;
+    if (level <= 3) return AppConstants.successColor; // Soft green for easy
+    if (level <= 6) return AppConstants.accentColor; // Warm yellow for medium
+    if (level <= 9) return const Color(0xFFFF8A50); // Soft orange for hard
+    if (level <= 12) return AppConstants.errorColor; // Soft coral for expert
+    return AppConstants.primaryColor; // Blue for master levels
   }
 
   /// Get difficulty icon for level
   Widget getLevelDifficultyIcon(int level) {
     if (level <= 3) {
-      return const Icon(Icons.star, color: Colors.green, size: 20);
+      return const Icon(Icons.star, color: AppConstants.successColor, size: 20);
     } else if (level <= 6) {
-      return const Icon(Icons.star_half, color: Colors.orange, size: 20);
+      return const Icon(Icons.star_half,
+          color: AppConstants.accentColor, size: 20);
     } else if (level <= 9) {
-      return const Icon(Icons.whatshot, color: Colors.red, size: 20);
+      return const Icon(Icons.whatshot, color: Color(0xFFFF8A50), size: 20);
     } else if (level <= 12) {
       return const Icon(Icons.local_fire_department,
-          color: Colors.red, size: 20);
+          color: AppConstants.errorColor, size: 20);
     } else {
-      return const Icon(Icons.diamond, color: Colors.purple, size: 20);
+      return const Icon(Icons.diamond,
+          color: AppConstants.primaryColor, size: 20);
     }
   }
 

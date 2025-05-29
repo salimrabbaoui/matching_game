@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/constants/app_constants.dart';
 
 class ProgressTimerWidget extends StatelessWidget {
   final int currentTime;
@@ -13,9 +14,9 @@ class ProgressTimerWidget extends StatelessWidget {
     required this.currentTime,
     required this.maxTime,
     this.showMaxTime = true,
-    this.progressColor = const Color(0xFF2ECC71),
-    this.backgroundColor = const Color(0xFFE0E6E8),
-    this.textColor = const Color(0xFF2ECC71),
+    this.progressColor = AppConstants.primaryColor,
+    this.backgroundColor = AppConstants.backgroundColor,
+    this.textColor = AppConstants.primaryColor,
   });
 
   @override
